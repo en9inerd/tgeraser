@@ -1,0 +1,28 @@
+# This will enable almost every single warning
+allow-shorthand: false
+
+ignore-patterns:
+  - (^|/)\..+
+
+pylint:
+  run: false
+
+mccabe:
+  run: false
+
+pep8:
+  run: false
+
+pyroma:
+  disable:
+    - PYR19
+    - PYR16
+
+pep257:
+  disable:
+    - D000
+
+pyflakes:
+  run: false
+  disable:
+    - F841

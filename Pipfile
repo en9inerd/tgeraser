@@ -1,0 +1,28 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+vulture = "*"
+jiggle-version = "*"
+black = "*"
+prospector = {extras = ["with-everything"],version = "*"}
+mypy = "*"
+detect-secrets = "*"
+twine = "*"
+pylint = "*"
+checksumdir = "*"
+pynt = "*"
+pynt-contrib = "*"
+semantic_version = "*"
+nose = "*"
+pipenv-to-requirements = "*"
+
+[packages]
+pyyaml = ">=4.2b4"
+docopt = "*"
+telethon = "*"
+
+[requires]
+python_version = "3.7"

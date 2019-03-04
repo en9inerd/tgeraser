@@ -1,0 +1,22 @@
+branches:
+  only:
+  - master
+
+language: python
+dist: xenial
+sudo: true
+addons:
+  apt_packages:
+    - pandoc
+python:
+  - "3.6"
+  - "3.7"
+cache: pip
+# command to install dependencies
+install:
+  - pwd
+  - pip install -U pip
+  - pip install -r requirements.txt
+
+# command to run tests
+script: pynt package

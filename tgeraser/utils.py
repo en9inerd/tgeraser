@@ -25,15 +25,18 @@ def print_header(text: str) -> None:
 
 def get_credentials(path: str = None, session_name: str = None) -> Dict[str, str]:
     """
-    Returns credentials and certain session from YAML file by input
+    Returns credentials and certain session from YAML file
     """
-    path_to_creds = os.path.expanduser("~/.tgeraser/credentials.yml")
-    creds = yaml.load(open(path_to_creds, "r"))
+    path_to_file = os.path.expanduser(path)
+    path_to_directory = ""
+
+    creds = yaml.load(open(path_to_file, "r"))
+
     if session_name:
         for i, cred in enumerate(creds["sessions"]):
             if cred["session_user_id"] == session_name:
                 creds["sessions"][i]["session_user_id"] = (
-                    os.path.expanduser("~/.tgeraser/") + session_name + ".session"
+                    os.path.expanduser(path_to_directory) + session_name + ".session"
                 )
                 return {**creds["api_credentials"], **creds["sessions"][i]}
 
@@ -55,3 +58,10 @@ def get_credentials(path: str = None, session_name: str = None) -> Dict[str, str
             + ".session"
         )
         return {**creds["api_credentials"], **creds["sessions"][num]}
+
+
+def create_credential_file(path: str):
+    """
+    creates credential YAML file
+    """
+    pass

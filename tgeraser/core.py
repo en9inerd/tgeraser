@@ -1,19 +1,23 @@
 # coding=utf-8
-"""Script deletes all your messages from chat/dialog in Telegram. This version is more faster than script from original repo.
+"""
+Tool erases all your messages from chat/channel/dialog on Telegram.
 
 Usage:
-    tgeraser [(session <session_name>) [-c | -d]]
+    tgeraser [ (session <session_name>) -di=FILENAME -p=ID -t=NUM ]
     tgeraser (-h | --help)
     tgeraser --version
 
 Options:
-    -c --channels   List only Channels - default.
-    -d --dialogs    List only Dialogs.
-    -h --help       Show this screen.
-    --version       Show version.
+    -i --input-file=FILENAME    Specify input YAML file. [default: ~/.tgeraser/credentials.yml]
+    -d --dialogs                List only Dialogs (Channels & Chats by default).
+    -p --peer=ID                Specify certain peer (chat/channel/dialof).
+    -t --time-period=NUM        Specify period for infinite loop to run message erasing every NUM seconds. [default: 0]
+    -h --help                   Show this screen.
+    --version                   Show version.
 
 """
 
+import sys, traceback
 from docopt import docopt
 
 from . import Eraser
@@ -27,15 +31,21 @@ def entry() -> None:
     """
     arguments = docopt(__doc__, version=__version__)
 
-    credentials = get_credentials(
-        path=None,
-        session_name=arguments["<session_name>"] if arguments["session"] else None,
-    )
+    try:
+        credentials = get_credentials(
+            path=arguments["--input-file"],
+            session_name=arguments["<session_name>"] if arguments["session"] else None,
+        )
 
-    client = Eraser(**credentials, dialogs=arguments["--dialogs"])
-    client.run()
-    print("\nDeletion is finished.\n")
-    client.disconnect()
+        client = Eraser(**credentials, dialogs=arguments["--dialogs"])
+        client.run()
+        print("\nErasing is finished.\n")
+        client.disconnect()
+    except KeyboardInterrupt:
+        print("Exiting...")
+    except Exception:
+        traceback.print_exc(file=sys.stdout)
+    exit(0)
 
 
 if __name__ == "__main__":

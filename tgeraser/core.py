@@ -3,7 +3,7 @@
 Tool erases all your messages from chat/channel/dialog on Telegram.
 
 Usage:
-    tgeraser [ (session <session_name>) -di=FILENAME -p=ID -lt=NUM ]
+    tgeraser [ (session <session_name>) -dkl -i=FILENAME -p=ID -t=NUM ]
     tgeraser (-h | --help)
     tgeraser --version
 
@@ -13,12 +13,17 @@ Options:
     -p --peer=ID                Specify certain peer (chat/channel/dialog).
     -l --limit=NUM              Show specified number of recent chats.
     -t --time-period=NUM        Specify period for infinite loop to run message erasing every NUM seconds. [default: 0]
+    -k --kill                   Kill background process if you specify --time option (only for Unix-like os).
     -h --help                   Show this screen.
     --version                   Show version.
 
 """
 
+import os
+import signal
+import subprocess
 import sys
+import time
 import traceback
 
 from docopt import docopt
@@ -36,6 +41,14 @@ def entry() -> None:
     check_num("limit", arguments["--limit"])
     check_num("time", arguments["--time"])
 
+    if arguments["--kill"]:
+        cmd = subprocess.Popen(["ps", "-A"], stdout=subprocess.PIPE)
+        out = cmd.communicate()[0]
+        for line in out.splitlines():
+            if "tgeraser" in line:
+                pid = int(line.split(None, 1)[0])
+                os.kill(pid, signal.SIGKILL)
+
     try:
         credentials = get_credentials(
             path=arguments["--input-file"],
@@ -49,7 +62,18 @@ def entry() -> None:
             "limit": arguments["--limit"],
         }
 
-        client = Eraser(**kwargs)
+        while True:
+            client = Eraser(**kwargs)
+            if arguments["--time"]:
+                print(
+                    "({0})\tNext erasing will be in {1} seconds.".format(
+                        time.strftime("%Y-%m-%d, %H:%M:%S", time.gmtime()),
+                        arguments["--time"],
+                    )
+                )
+                time.sleep(int(arguments["--time"]))
+            else:
+                break
         client.run()
         print("\nErasing is finished.\n")
         client.disconnect()

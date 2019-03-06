@@ -3,4 +3,4 @@ pyaes==1.6.1
 pyasn1==0.4.5
 pyyaml==4.2b4
 rsa==4.0
-telethon==1.6.1.post1
+telethon==1.6.2

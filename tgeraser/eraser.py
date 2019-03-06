@@ -14,7 +14,8 @@ from telethon.tl.functions.messages import (
 from telethon.tl.functions.messages import SearchRequest
 from telethon.tl.types import Channel, InputMessagesFilterEmpty, InputUserSelf, User
 
-from .utils import chunks, print_header
+from .utils import chunks, print_header, check_num
+from .exceptions import TgEraserException
 
 # _ = Any, Dict, Iterable, List, Set, Union
 
@@ -24,17 +25,12 @@ class Eraser(TelegramClient):  # type: ignore
     Subclass of TelegramClient class
     """
 
-    def __init__(
-        self: TelegramClient,
-        session_user_id: str,
-        user_phone: str,
-        api_id: str,
-        api_hash: str,
-        dialogs: bool = False,
-    ) -> None:
-        super().__init__(session_user_id, api_id, api_hash)
+    def __init__(self: TelegramClient, **kwargs: Union[str, bool, None]) -> None:
+        super().__init__(kwargs["session_user_id"], kwargs["api_id"], ["api_hash"])
 
-        self.__dialogs = dialogs
+        self.__limit = kwargs["limit"]
+        self.__peer = kwargs["peer"]
+        self.__dialogs = kwargs["dialogs"]
         self.__messages_to_delete: Set[int] = set()
 
         # Check connection to the server
@@ -47,13 +43,13 @@ class Eraser(TelegramClient):  # type: ignore
         # Check authorization
         if not self.is_user_authorized():
             print("First run. Sending code request...")
-            self.send_code_request(user_phone)
+            self.send_code_request(kwargs["user_phone"])
 
             self_user = None
             while self_user is None:
                 code = input("Enter the code you just received: ")
                 try:
-                    self_user = self.sign_in(user_phone, code)
+                    self_user = self.sign_in(kwargs["user_phone"], code)
 
                 # Two-step verification may be enabled
                 except SessionPasswordNeededError:
@@ -73,11 +69,17 @@ class Eraser(TelegramClient):  # type: ignore
         """
         Runs deletion of messages from peer
         """
-        peer = self.__choose_peer()
+        if self.__peer:
+            try:
+                self.get_entity(self.__peer)
+            except ValueError:
+                raise TgEraserException("Specified entity can't be found.")
+        else:
+            peer = self.__get_peer()
         self.__messages_to_delete.update(msg.id for msg in self.__get_messages(peer))
         return self.__delete_messages_from_peer(peer)
 
-    def __choose_peer(self) -> Union[User, Channel]:
+    def __get_peer(self) -> Union[User, Channel]:
         """
         Returns chosen peer
         """
@@ -94,17 +96,15 @@ class Eraser(TelegramClient):  # type: ignore
 
         for i, entity in enumerate(entities):
             name = entity.first_name if self.__dialogs else entity.title
-            s += "{}. {}\t | {}\n".format(i, name, entity.id)
+            s += "{0}. {1}\t | {2}\n".format(i, name, entity.id)
 
         print(s)
-        num = input("Choose group: ")
-        print(
-            "Chosen: " + entities[int(num)].first_name
-            if self.__dialogs
-            else entities[int(num)].title
-        )
+        num = input("Choose peer: ")
+        check_num("peer", num)
+        entity = entities[int(num)]
+        print("Chosen: " + entity.first_name if self.__dialogs else entity.title)
 
-        return entities[int(num)]
+        return entity
 
     def __delete_messages_from_peer(self, peer: Union[Channel, User]) -> bool:
         """

@@ -79,15 +79,16 @@ setup(
         'pyasn1==0.4.5',
         'pyyaml==4.2b4',
         'rsa==4.0',
-        'telethon==1.6.1.post1'
+        'telethon==1.6.2'
     ],
     extras_require={},
     include_package_data=True,
     license='MIT',
-    keywords="ui",
+    keywords="telegram, api, delete messages",
     classifiers=[
         # 'Programming Language :: Python',
-        # 'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: CPython',
         # 'Programming Language :: Python :: Implementation :: PyPy',

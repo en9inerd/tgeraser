@@ -364,7 +364,7 @@ def check_setup_py():
             execute(*("{0} {1} setup.py check -r -s".format(PIPENV, PYTHON).strip().split(" ")))
 
 
-@task(pin_dependencies, dead_code, check_setup_py, compile_md, compile_py, mypy, lint, nose_tests, jiggle_version, detect_secrets)
+@task(dead_code, check_setup_py, compile_md, compile_py, mypy, lint, nose_tests, jiggle_version, detect_secrets)
 @skip_if_no_change("package")
 @timed()
 def package():
@@ -377,15 +377,18 @@ def package():
 
     os.system('say "package complete."')
 
-@task(package)
+@task()
 @skip_if_no_change("upload_package")
 @timed()
 def upload_package():
     """
-    Not implemented yet
+    Upload
     """
-    # TODO: upload if version has changed since last successful upload
-    pass
+    with safe_cd(SRC):
+        if IS_TRAVIS:
+            pass
+        else:
+            execute(*("{0} {1} setup.py upload".format(PIPENV, PYTHON).strip().split(" ")))
 
 
 @task()

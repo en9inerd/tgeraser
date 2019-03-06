@@ -29,7 +29,9 @@ class Eraser(TelegramClient):  # type: ignore
         super().__init__(kwargs["session_name"], kwargs["api_id"], kwargs["api_hash"])
 
         self.__limit = kwargs["limit"]
-        self.__peer = kwargs["peer"]
+        self.__peer = (
+            int(kwargs["peer"]) if kwargs["peer"].isdigit() else str(kwargs["peer"])
+        )
         self.__dialogs = kwargs["dialogs"]
         self.__entity = None
         self.__messages_to_delete: Set[int] = set()
@@ -59,10 +61,9 @@ class Eraser(TelegramClient):  # type: ignore
                     )
                     self_user = self.sign_in(password=pw)
 
-        limit = input("Enter number of chats to show them (empty for all): ")
         # To show specified number of chats
-        if limit:
-            self.__limit = int(limit)
+        if kwargs["limit"]:
+            self.__limit = int(kwargs["limit"])
         else:
             self.__limit = None
 

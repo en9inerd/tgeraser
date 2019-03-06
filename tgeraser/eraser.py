@@ -17,7 +17,7 @@ from telethon.tl.types import Channel, InputMessagesFilterEmpty, InputUserSelf, 
 from .utils import chunks, print_header, check_num
 from .exceptions import TgEraserException
 
-# _ = Any, Dict, Iterable, List, Set, Union
+_ = Any, List, Set, Union
 
 
 class Eraser(TelegramClient):  # type: ignore
@@ -26,7 +26,7 @@ class Eraser(TelegramClient):  # type: ignore
     """
 
     def __init__(self: TelegramClient, **kwargs: Union[str, bool, None]) -> None:
-        super().__init__(kwargs["session_user_id"], kwargs["api_id"], ["api_hash"])
+        super().__init__(kwargs["session_name"], kwargs["api_id"], kwargs["api_hash"])
 
         self.__limit = kwargs["limit"]
         self.__peer = kwargs["peer"]

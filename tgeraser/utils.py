@@ -106,12 +106,13 @@ def create_credential_file(path: str, directory: str):
     i: int = 0
     while not phone_pattern.search(credentials["sessions"][0]["user_phone"]):
         i += 1
+        if i == 4:
+            raise TgEraserException("Incorrect phone number. Exiting...")
+
         print("Incorrect phone number. Try again.")
         credentials["sessions"][0]["user_phone"] = input(
             "Enter user_phone (+1234567890): "
         )
-        if i == 5:
-            raise TgEraserException("Incorrect phone number. Exiting...")
 
     with open(path, "w") as yaml_file:
         yaml.dump(credentials, yaml_file, default_flow_style=False)

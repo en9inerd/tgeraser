@@ -4,6 +4,7 @@ small Python functions and classes which make common patterns shorter and easier
 """
 import os
 from typing import Any, Dict, Iterable, List, Optional, Set, Union
+from .exceptions import TgEraserException
 
 import yaml
 
@@ -21,6 +22,14 @@ def print_header(text: str) -> None:
     print("--------------------")
     print(f"| {text} |")
     print("--------------------")
+
+
+def check_num(name: str, num: int) -> None:
+    """check if a string represents an int"""
+    try:
+        int(num)
+    except ValueError:
+        raise TgEraserException(f"Error: '{name}' should be integer.")
 
 
 def get_credentials(path: str = None, session_name: str = None) -> Dict[str, str]:

@@ -31,6 +31,7 @@ class Eraser(TelegramClient):  # type: ignore
         self.__limit = kwargs["limit"]
         self.__peer = kwargs["peer"]
         self.__dialogs = kwargs["dialogs"]
+        self.__entity = None
         self.__messages_to_delete: Set[int] = set()
 
         # Check connection to the server
@@ -71,15 +72,15 @@ class Eraser(TelegramClient):  # type: ignore
         """
         if self.__peer:
             try:
-                self.get_entity(self.__peer)
+                self.__entity = self.get_entity(self.__peer)
             except ValueError:
                 raise TgEraserException("Specified entity can't be found.")
         else:
-            peer = self.__get_peer()
-        self.__messages_to_delete.update(msg.id for msg in self.__get_messages(peer))
-        return self.__delete_messages_from_peer(peer)
+            self.__get_entity()
+        self.__messages_to_delete.update(msg.id for msg in self.__get_messages())
+        return self.__delete_messages_from_peer()
 
-    def __get_peer(self) -> Union[User, Channel]:
+    def __get_entity(self) -> None:
         """
         Returns chosen peer
         """
@@ -101,12 +102,14 @@ class Eraser(TelegramClient):  # type: ignore
         print(s)
         num = input("Choose peer: ")
         check_num("peer", num)
-        entity = entities[int(num)]
-        print("Chosen: " + entity.first_name if self.__dialogs else entity.title)
+        self.__entity = entities[int(num)]
+        print(
+            "Chosen: " + self.__entity.first_name
+            if self.__dialogs
+            else self.__entity.title
+        )
 
-        return entity
-
-    def __delete_messages_from_peer(self, peer: Union[Channel, User]) -> bool:
+    def __delete_messages_from_peer(self) -> bool:
         """
         Message eraser method
         """
@@ -114,7 +117,7 @@ class Eraser(TelegramClient):  # type: ignore
         print_header(
             "Delete {0} of my messages in chat {1}".format(
                 len(messages_to_delete),
-                peer.first_name if self.__dialogs else peer.title,
+                self.__entity.first_name if self.__dialogs else self.__entity.title,
             )
         )
         for chunk_data in chunks(
@@ -123,19 +126,14 @@ class Eraser(TelegramClient):  # type: ignore
             if self.__dialogs:
                 r = self(DeleteMessagesRequestFromUser(chunk_data, revoke=True))
             else:
-                r = self(DeleteMessagesRequest(peer, chunk_data))
+                r = self(DeleteMessagesRequest(self.__entity, chunk_data))
             if r.pts_count:
                 print("Number of deleted messages: {0}".format(r.pts_count))
             sleep(1)
         return True
 
     def __get_messages(
-        self,
-        peer: Union[Channel, User],
-        limit: int = 100,
-        offset_id: int = 0,
-        max_id: int = 0,
-        min_id: int = 0,
+        self, limit: int = 100, offset_id: int = 0, max_id: int = 0, min_id: int = 0
     ) -> List[Any]:
         print_header("Getting messages...")
         add_offset = 0
@@ -145,7 +143,7 @@ class Eraser(TelegramClient):  # type: ignore
             sleep(1)
             result = self(
                 SearchRequest(
-                    peer=peer,
+                    peer=self.__entity,
                     q="",
                     filter=InputMessagesFilterEmpty(),
                     min_date=None,

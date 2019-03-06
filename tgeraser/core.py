@@ -3,17 +3,18 @@
 Tool erases all your messages from chat/channel/dialog on Telegram.
 
 Usage:
-    tgeraser [ (session <session_name>) -dkl -i=FILENAME -p=ID -t=NUM ]
+    tgeraser [ (session <session_name>) dl [ -i=FILENAME | -j=DICT ] -p=ID -t=NUM ] | [ -k ]
     tgeraser (-h | --help)
     tgeraser --version
 
 Options:
-    -i --input-file=FILENAME    Specify input YAML file. [default: ~/.tgeraser/credentials.yml]
+    -i --input-file=FILENAME    Specify YAML file that contains credentials. [default: ~/.tgeraser/credentials.yml]
+    -j --json=DICT              Specify json string that contains credentials (double quotes must be escaped).
     -d --dialogs                List only Dialogs (Channels & Chats by default).
     -p --peer=ID                Specify certain peer (chat/channel/dialog).
     -l --limit=NUM              Show specified number of recent chats.
     -t --time-period=NUM        Specify period for infinite loop to run message erasing every NUM seconds. [default: 0]
-    -k --kill                   Kill background process if you specify --time option (only for Unix-like os).
+    -k --kill                   Kill background process if you specify --time option (only for Unix-like OS).
     -h --help                   Show this screen.
     --version                   Show version.
 
@@ -30,7 +31,8 @@ from docopt import docopt
 
 from . import Eraser
 from .__version__ import __version__
-from .utils import check_num, get_credentials
+from .exceptions import TgEraserException
+from .utils import check_num, get_credentials_from_yaml, get_credentials_from_json
 
 
 def entry() -> None:
@@ -42,6 +44,8 @@ def entry() -> None:
     check_num("time", arguments["--time"])
 
     if arguments["--kill"]:
+        if os.name != "posix":
+            raise TgEraserException("You can't use '--kill' option on Windows.")
         cmd = subprocess.Popen(["ps", "-A"], stdout=subprocess.PIPE)
         out = cmd.communicate()[0]
         for line in out.splitlines():
@@ -50,10 +54,15 @@ def entry() -> None:
                 os.kill(pid, signal.SIGKILL)
 
     try:
-        credentials = get_credentials(
-            path=arguments["--input-file"],
-            session_name=arguments["<session_name>"] if arguments["session"] else None,
-        )
+        if arguments["--json"]:
+            credentials = get_credentials_from_json(arguments["--json"])
+        else:
+            credentials = get_credentials_from_yaml(
+                path=arguments["--input-file"],
+                session_name=arguments["<session_name>"]
+                if arguments["session"]
+                else None,
+            )
 
         kwargs = {
             **credentials,
@@ -81,7 +90,6 @@ def entry() -> None:
         print("Exiting...")
     except Exception:
         traceback.print_exc(file=sys.stdout)
-    exit(0)
 
 
 if __name__ == "__main__":

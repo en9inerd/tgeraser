@@ -3,7 +3,7 @@
 Tool erases all your messages from chat/channel/dialog on Telegram.
 
 Usage:
-    tgeraser [ (session <session_name>) dl [ -i=FILENAME | -j=DICT ] -p=ID -t=NUM ] | [ -k ]
+    tgeraser [ (session <session_name>) -dl=NUM [ -i=FILENAME | -j=DICT ] -p=ID -t=NUM ] | [ -k ]
     tgeraser (-h | --help)
     tgeraser --version
 
@@ -13,7 +13,7 @@ Options:
     -d --dialogs                List only Dialogs (Channels & Chats by default).
     -p --peer=ID                Specify certain peer (chat/channel/dialog).
     -l --limit=NUM              Show specified number of recent chats.
-    -t --time-period=NUM        Specify period for infinite loop to run message erasing every NUM seconds. [default: 0]
+    -t --time-period=NUM        Specify period for infinite loop to run message erasing every NUM seconds.
     -k --kill                   Kill background process if you specify --time option (only for Unix-like OS).
     -h --help                   Show this screen.
     --version                   Show version.
@@ -40,8 +40,10 @@ def entry() -> None:
     Entry function
     """
     arguments = docopt(__doc__, version=__version__)
-    check_num("limit", arguments["--limit"])
-    check_num("time", arguments["--time"])
+    if arguments["--limit"]:
+        check_num("limit", arguments["--limit"])
+    if arguments["--time-period"]:
+        check_num("time", arguments["--time-period"])
 
     if arguments["--kill"]:
         if os.name != "posix":
@@ -73,21 +75,21 @@ def entry() -> None:
 
         while True:
             client = Eraser(**kwargs)
-            if arguments["--time"]:
+            client.run()
+            client.disconnect()
+            if arguments["--time-period"]:
                 print(
                     "({0})\tNext erasing will be in {1} seconds.".format(
                         time.strftime("%Y-%m-%d, %H:%M:%S", time.gmtime()),
-                        arguments["--time"],
+                        arguments["--time-period"],
                     )
                 )
-                time.sleep(int(arguments["--time"]))
+                time.sleep(int(arguments["--time-period"]))
             else:
                 break
-        client.run()
         print("\nErasing is finished.\n")
-        client.disconnect()
     except KeyboardInterrupt:
-        print("Exiting...")
+        print("\nExiting...")
     except Exception:
         traceback.print_exc(file=sys.stdout)
 

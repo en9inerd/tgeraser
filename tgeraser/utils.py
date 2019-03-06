@@ -36,13 +36,13 @@ def check_num(name: str, num: int) -> None:
 
 
 def get_credentials_from_yaml(
-    path: str = None, session_name: str = None
+    path: str, session_name: Optional[str] = None
 ) -> Dict[str, str]:
     """
     Returns credentials and certain session from YAML file
     """
     path_to_file = os.path.abspath(os.path.expanduser(path))
-    path_to_directory = os.path.dirname(path)
+    path_to_directory = os.path.dirname(path_to_file) + "/"
 
     if not os.path.exists(path_to_file):
         answer = None
@@ -62,13 +62,15 @@ def get_credentials_from_yaml(
         for i, cred in enumerate(creds["sessions"]):
             if cred["session_name"] == session_name:
                 creds["sessions"][i]["session_name"] = (
-                    os.path.expanduser(path_to_directory) + session_name + ".session"
+                    path_to_directory + session_name + ".session"
                 )
+                print(creds["sessions"][i]["session_name"])
                 return {**creds["api_credentials"], **creds["sessions"][i]}
 
         raise TgEraserException(
             "It can't find '{0}' session in credentials file.".format(session_name)
         )
+
     else:
         s = ""
         for i, cred in enumerate(creds["sessions"]):
@@ -81,21 +83,22 @@ def get_credentials_from_yaml(
         print("Chosen: " + creds["sessions"][num]["session_name"])
 
         creds["sessions"][num]["session_name"] = (
-            os.path.expanduser("~/.tgeraser/")
-            + creds["sessions"][num]["session_name"]
-            + ".session"
+            path_to_directory + creds["sessions"][num]["session_name"] + ".session"
         )
         return {**creds["api_credentials"], **creds["sessions"][num]}
 
 
-def create_credential_file(path: str, directory: str):
+def create_credential_file(path: str, directory: str) -> Dict[str, str]:
     """
     creates credential YAML file
     """
     os.makedirs(directory, exist_ok=True)
 
     phone_pattern = re.compile(r"^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$")
-    credentials = {"api_credentials": {}, "sessions": [{}]}
+    credentials = {
+        "api_credentials": {},
+        "sessions": [{}],
+    }  # type: Dict[str, Union[Dict[str,str],List[Dict[str,str]]]]
 
     credentials["api_credentials"]["api_id"] = input("Enter api_id: ")
     credentials["api_credentials"]["api_hash"] = input("Enter api_hash: ")

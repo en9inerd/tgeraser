@@ -1,16 +1,16 @@
 # coding=utf-8
 """
-Tool erases all your messages from chat/channel/dialog on Telegram.
+Tool deletes all your messages from chat/channel/dialog on Telegram.
 
 Usage:
-    tgeraser [ (session <session_name>) -dl=NUM [ -i=FILENAME | -j=DICT ] -p=ID -t=NUM ] | [ -k ]
+    tgeraser [ (session <session_name>) -del=NUM [ -i=FILENAME | -j=DICT ] -p=ID -t=NUM ] | [ -k ]
     tgeraser (-h | --help)
     tgeraser --version
 
 Options:
     -i --input-file=FILENAME    Specify YAML file that contains credentials. [default: ~/.tgeraser/credentials.yml]
     -j --json=DICT              Specify json string that contains credentials (double quotes must be escaped).
-    -e --environment-variables  Get credentials from environment variables ().
+    -e --environment-variables  Get credentials from environment variables (TG_API_ID, TG_API_HASH, TG_SESSION, TG_PHONE).
     -d --dialogs                List only Dialogs (Channels & Chats by default).
     -p --peer=ID                Specify certain peer (chat/channel/dialog).
     -l --limit=NUM              Show specified number of recent chats.
@@ -39,6 +39,7 @@ from .utils import (
     get_credentials_from_json,
     get_credentials_from_yaml,
     get_env,
+    get_credentials_from_env,
 )
 
 loop = asyncio.get_event_loop()
@@ -72,9 +73,7 @@ def entry() -> None:
                 arguments["<session_name>"],
             )
         elif arguments["--environment-variables"]:
-            credentials = get_credentials_from_env(
-                arguments["--input-file"]
-            )
+            credentials = get_credentials_from_env(arguments["--input-file"])
         else:
             credentials = get_credentials_from_yaml(
                 path=arguments["--input-file"],
@@ -103,7 +102,6 @@ def entry() -> None:
                 time.sleep(int(arguments["--time-period"]))
             else:
                 break
-        print("\nErasing is finished.\n")
     except KeyboardInterrupt:
         print("\nExiting...")
     except Exception:

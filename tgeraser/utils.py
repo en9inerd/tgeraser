@@ -185,11 +185,16 @@ def get_credentials_from_json(
 
 
 def get_credentials_from_env(path: str) -> Dict[str, Any]:
-    SESSION = os.environ.get("TG_SESSION", "interactive")
     API_ID = get_env("TG_API_ID", "Enter your API ID: ", int)
     API_HASH = get_env("TG_API_HASH", "Enter your API hash: ")
-    USER_PHONE = get_env("TG_PHONE", "Enter your API hash: ")
-    return credentials = {}
+    SESSION = get_env("TG_SESSION", "Enter session name: ")
+    USER_PHONE = get_env("TG_PHONE", "Enter phone number (+1234567890): ")
+    return {
+        "api_id ": API_ID,
+        "api_hash": API_HASH,
+        "session_name": SESSION,
+        "user_phone": USER_PHONE,
+    }
 
 
 def check_credentials_dict(creds: Dict[str, Any]) -> None:
@@ -202,3 +207,7 @@ def check_credentials_dict(creds: Dict[str, Any]) -> None:
         raise TgEraserException("Credentials file doesn't contain 'api_hash'.")
     if not creds["sessions"]:
         raise TgEraserException("Credentials file doesn't contain sessions.")
+    if not creds["sessions"][0]["session_name"]:
+        raise TgEraserException("Credentials file doesn't contain session_name.")
+    if not creds["sessions"][0]["user_phone"]:
+        raise TgEraserException("Credentials file doesn't contain user_phone.")

@@ -60,7 +60,7 @@ data_files = []
 setup(
     name=PROJECT_NAME,
     version=about['__version__'],
-    description='Resource availability checker',
+    description='Tool erases all your messages from chat/channel/dialog on Telegram',
     long_description=long_description,
     # markdown is not supported. Easier to just convert md to rst with pandoc
     # long_description_content_type='text/markdown',

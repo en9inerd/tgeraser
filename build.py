@@ -341,14 +341,7 @@ def jiggle_version():
 @timed()
 def pin_dependencies():
     with safe_cd(SRC):
-        # right not because of black, pylint and astroid and (more?) freeze fails.
-        # would have to do this in fresh env w/o dev deps.
-        try:
-            execute(*("{0} pipenv_to_requirements --freeze".format(PIPENV).strip().split(" ")))
-        except:
-            print("No pipfile.pip, switching to ordinary freeze")
-            execute(*("{0} pip freeze".format(PIPENV).strip().split(" ")))
-            raise NotImplementedError("TODO: pipe to requirements.txt")
+        execute(*("{0} pipenv_to_requirements".format(PIPENV).strip().split(" ")))
 
 
 @task(compile_md)
@@ -364,7 +357,7 @@ def check_setup_py():
             execute(*("{0} {1} setup.py check -r -s".format(PIPENV, PYTHON).strip().split(" ")))
 
 
-@task(dead_code, check_setup_py, compile_md, compile_py, mypy, lint, nose_tests, jiggle_version, detect_secrets)
+@task(pin_dependencies, dead_code, check_setup_py, compile_md, compile_py, mypy, lint, nose_tests, jiggle_version, detect_secrets)
 @skip_if_no_change("package")
 @timed()
 def package():

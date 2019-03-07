@@ -5,6 +5,7 @@ small Python functions and classes which make common patterns shorter and easier
 import json
 import os
 import re
+import sys
 from typing import Any, Dict, Iterable, List, Optional, Set, Union
 
 import yaml
@@ -20,17 +21,41 @@ def chunks(l: List[Any], n: int) -> Iterable[Any]:
         yield l[i : i + n]
 
 
-def print_header(text: str) -> None:
-    """Just for nice output"""
-    print("--------------------")
-    print(f"| {text} |")
-    print("--------------------")
+def sprint(string: str, *args: Any, **kwargs: Any) -> None:
+    """Safe Print (handle UnicodeEncodeErrors on some terminals)"""
+    try:
+        print(string, *args, **kwargs)
+    except UnicodeEncodeError:
+        string = string.encode("utf-8", errors="ignore").decode(
+            "ascii", errors="ignore"
+        )
+        print(string, *args, **kwargs)
 
 
-def check_num(name: str, num: int) -> None:
+def print_header(title: str) -> None:
+    """Helper function to print titles to the console more nicely"""
+    sprint("\n")
+    sprint("=={}==".format("=" * len(title)))
+    sprint("= {} =".format(title))
+    sprint("=={}==".format("=" * len(title)))
+
+
+def get_env(name: str, message: str, cast: Any = str) -> Any:
+    """Helper to get environment variables interactively"""
+    if name in os.environ:
+        return os.environ[name]
+    while True:
+        value = input(message)
+        try:
+            return cast(value)
+        except ValueError as e:
+            print(e, file=sys.stderr)
+
+
+def cast_to_int(num: str, name: str) -> int:
     """check if a string represents an int"""
     try:
-        int(num)
+        return int(num)
     except ValueError:
         raise TgEraserException(f"Error: '{name}' should be integer.")
 
@@ -72,15 +97,14 @@ def get_credentials_from_yaml(
         )
 
     else:
-        s = ""
-        for i, cred in enumerate(creds["sessions"]):
-            s += "{0}. {1}\t | {2}\n".format(
-                i, cred["session_name"], cred["user_phone"]
+        print_header("Sessions")
+        for i, cred in enumerate(creds["sessions"], start=1):
+            sprint(
+                "{0}. {1}\t | {2}".format(i, cred["session_name"], cred["user_phone"])
             )
 
-        print(s)
-        num = int(input("Choose session: "))
-        print("Chosen: " + creds["sessions"][num]["session_name"])
+        num = int(input("\nChoose session: ")) - 1
+        print("Chosen: " + creds["sessions"][num]["session_name"] + "\n")
 
         creds["sessions"][num]["session_name"] = (
             path_to_directory + creds["sessions"][num]["session_name"] + ".session"
@@ -96,9 +120,9 @@ def create_credential_file(path: str, directory: str) -> Dict[str, str]:
 
     phone_pattern = re.compile(r"^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$")
     credentials = {
-        "api_credentials": {},
-        "sessions": [{}],
-    }  # type: Dict[str, Union[Dict[str,str],List[Dict[str,str]]]]
+        "api_credentials": {"api_id": "", "api_hash": ""},
+        "sessions": [{"session_name": "", "user_phone": ""}],
+    } # type: Dict[str, Union[Any, str]]
 
     credentials["api_credentials"]["api_id"] = input("Enter api_id: ")
     credentials["api_credentials"]["api_hash"] = input("Enter api_hash: ")

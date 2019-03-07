@@ -20,6 +20,7 @@ Options:
 
 """
 
+import asyncio
 import os
 import signal
 import subprocess
@@ -32,7 +33,10 @@ from docopt import docopt
 from . import Eraser
 from .__version__ import __version__
 from .exceptions import TgEraserException
-from .utils import check_num, get_credentials_from_yaml, get_credentials_from_json
+from .utils import (cast_to_int, get_credentials_from_json,
+                    get_credentials_from_yaml)
+
+loop = asyncio.get_event_loop()
 
 
 def entry() -> None:
@@ -41,9 +45,9 @@ def entry() -> None:
     """
     arguments = docopt(__doc__, version=__version__)
     if arguments["--limit"]:
-        check_num("limit", arguments["--limit"])
+        arguments["--limit"] = cast_to_int(arguments["--limit"], "limit")
     if arguments["--time-period"]:
-        check_num("time", arguments["--time-period"])
+        arguments["--time-period"] = cast_to_int(arguments["--time-period"], "time")
 
     if arguments["--kill"]:
         if os.name != "posix":
@@ -75,8 +79,7 @@ def entry() -> None:
 
         while True:
             client = Eraser(**kwargs)
-            client.run()
-            client.disconnect()
+            loop.run_until_complete(client.run())
             if arguments["--time-period"]:
                 print(
                     "({0})\tNext erasing will be in {1} seconds.".format(

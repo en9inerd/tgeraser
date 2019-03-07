@@ -6,4 +6,4 @@ from .eraser import Eraser
 
 from . import __version__ as version
 
-__version__ = version.__version__
+__version__ = version.__version__  # type: ignore

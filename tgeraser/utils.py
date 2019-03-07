@@ -122,7 +122,7 @@ def create_credential_file(path: str, directory: str) -> Dict[str, str]:
     credentials = {
         "api_credentials": {"api_id": "", "api_hash": ""},
         "sessions": [{"session_name": "", "user_phone": ""}],
-    } # type: Dict[str, Union[Any, str]]
+    }  # type: Dict[str, Union[str, Any,]]
 
     credentials["api_credentials"]["api_id"] = input("Enter api_id: ")
     credentials["api_credentials"]["api_hash"] = input("Enter api_hash: ")
@@ -149,16 +149,50 @@ def create_credential_file(path: str, directory: str) -> Dict[str, str]:
     return {**credentials["api_credentials"], **credentials["sessions"][0]}
 
 
-def get_credentials_from_json(json_str: str) -> Dict[str, str]:
+def get_credentials_from_json(
+    json_str: str, path: str, session_name: str
+) -> Dict[str, Any]:
     """
     Returns credentials and certain session from JSON string
     """
     creds = json.loads(json_str)
     check_credentials_dict(creds)
-    return creds
+
+    if session_name:
+        for i, cred in enumerate(creds["sessions"]):
+            if cred["session_name"] == session_name:
+                creds["sessions"][i]["session_name"] = path + session_name + ".session"
+                print(creds["sessions"][i]["session_name"])
+                return {**creds["api_credentials"], **creds["sessions"][i]}
+
+        raise TgEraserException(
+            "It can't find '{0}' session in credentials file.".format(session_name)
+        )
+    else:
+        print_header("Sessions")
+        for i, cred in enumerate(creds["sessions"], start=1):
+            sprint(
+                "{0}. {1}\t | {2}".format(i, cred["session_name"], cred["user_phone"])
+            )
+
+        num = int(input("\nChoose session: ")) - 1
+        print("Chosen: " + creds["sessions"][num]["session_name"] + "\n")
+
+        creds["sessions"][num]["session_name"] = (
+            path + creds["sessions"][num]["session_name"] + ".session"
+        )
+        return {**creds["api_credentials"], **creds["sessions"][num]}
 
 
-def check_credentials_dict(creds: Dict[str, str]) -> None:
+def get_credentials_from_env(path: str) -> Dict[str, Any]:
+    SESSION = os.environ.get("TG_SESSION", "interactive")
+    API_ID = get_env("TG_API_ID", "Enter your API ID: ", int)
+    API_HASH = get_env("TG_API_HASH", "Enter your API hash: ")
+    USER_PHONE = get_env("TG_PHONE", "Enter your API hash: ")
+    return credentials = {}
+
+
+def check_credentials_dict(creds: Dict[str, Any]) -> None:
     """Checks basic structure of credentials dictionary"""
     if not creds["api_credentials"]:
         raise TgEraserException("Credentials file doesn't contain 'api_credentials'.")

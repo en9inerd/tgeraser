@@ -10,6 +10,7 @@ Usage:
 Options:
     -i --input-file=FILENAME    Specify YAML file that contains credentials. [default: ~/.tgeraser/credentials.yml]
     -j --json=DICT              Specify json string that contains credentials (double quotes must be escaped).
+    -e --environment-variables  Get credentials from environment variables ().
     -d --dialogs                List only Dialogs (Channels & Chats by default).
     -p --peer=ID                Specify certain peer (chat/channel/dialog).
     -l --limit=NUM              Show specified number of recent chats.
@@ -33,8 +34,12 @@ from docopt import docopt
 from . import Eraser
 from .__version__ import __version__
 from .exceptions import TgEraserException
-from .utils import (cast_to_int, get_credentials_from_json,
-                    get_credentials_from_yaml)
+from .utils import (
+    cast_to_int,
+    get_credentials_from_json,
+    get_credentials_from_yaml,
+    get_env,
+)
 
 loop = asyncio.get_event_loop()
 
@@ -61,7 +66,15 @@ def entry() -> None:
 
     try:
         if arguments["--json"]:
-            credentials = get_credentials_from_json(arguments["--json"])
+            credentials = get_credentials_from_json(
+                arguments["--json"],
+                arguments["--input-file"],
+                arguments["<session_name>"],
+            )
+        elif arguments["--environment-variables"]:
+            credentials = get_credentials_from_env(
+                arguments["--input-file"]
+            )
         else:
             credentials = get_credentials_from_yaml(
                 path=arguments["--input-file"],

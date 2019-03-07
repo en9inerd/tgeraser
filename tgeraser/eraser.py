@@ -139,7 +139,7 @@ class Eraser(TelegramClient):  # type: ignore
 
     async def __delete_messages_from_peer(self) -> bool:
         """
-        Message eraser method
+        Message deleter method
         """
         messages_to_delete = list(self.__messages_to_delete)
         print_header(
@@ -157,6 +157,8 @@ class Eraser(TelegramClient):  # type: ignore
             if r.pts_count:
                 print("Number of deleted messages: {0}".format(r.pts_count))
             sleep(1)
+        
+        print_header("Erasing is finished.")
         return True
 
     async def __get_messages(
@@ -194,5 +196,5 @@ class Eraser(TelegramClient):  # type: ignore
                 add_offset += len(result.messages)
                 sleep(1)
             else:
-                print_header("It's finished because it met end of chat.")
+                print("It's finished because it met end of chat.")
                 return messages

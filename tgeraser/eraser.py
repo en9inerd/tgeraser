@@ -127,6 +127,9 @@ class Eraser(TelegramClient):  # type: ignore
         if not self.__dialogs:
             entities = [entity for entity in entities if entity.megagroup]
 
+        if not entities:
+            raise TgEraserException("You aren't joined to any chat.")
+
         print_header("Dialogs")
         for i, entity in enumerate(entities, start=1):
             sprint("{0}. {1}\t | {2}".format(i, get_display_name(entity), entity.id))
@@ -157,7 +160,7 @@ class Eraser(TelegramClient):  # type: ignore
             if r.pts_count:
                 print("Number of deleted messages: {0}".format(r.pts_count))
             sleep(1)
-        
+
         print_header("Erasing is finished.")
         return True
 

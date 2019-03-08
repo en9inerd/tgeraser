@@ -81,7 +81,7 @@ def prospector():
                   .format(PROJECT_NAME)
                   .split(" ")))
 
-@task(compile_py)
+@task(compile_py, prospector)
 @skip_if_no_change("lint", expect_files="lint.txt")
 @timed()
 def lint():
@@ -357,7 +357,7 @@ def check_setup_py():
             execute(*("{0} {1} setup.py check -r -s".format(PIPENV, PYTHON).strip().split(" ")))
 
 
-@task(pin_dependencies, dead_code, check_setup_py, compile_md, compile_py, mypy, lint, nose_tests, jiggle_version, detect_secrets)
+@task(pin_dependencies, dead_code, check_setup_py, compile_md, compile_py, mypy, lint, coverage, nose_tests, jiggle_version, detect_secrets)
 @skip_if_no_change("package")
 @timed()
 def package():

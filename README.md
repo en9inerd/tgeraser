@@ -2,7 +2,7 @@
 
 Tool that deletes messages from chats, channels and dialogs
 
-[![PyPI version](https://badge.fury.io/py/tgeraser.svg)](https://badge.fury.io/py/tgeraser)
+[![PyPI version](https://badge.fury.io/py/tgeraser.svg)](https://badge.fury.io/py/tgeraser) [![Build Status](https://travis-ci.org/eng1nerd/tgeraser.svg?branch=master)](https://travis-ci.org/eng1nerd/tgeraser)
 
 ## Installation
 

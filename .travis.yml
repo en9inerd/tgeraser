@@ -19,6 +19,9 @@ install:
   - pip install -U pip
   - pip install -r requirements.txt
   - pip install -r requirements-dev.txt
+  - pip install "attrs>=17.4.0" --upgrade
+  - pip install "astroid==1.6.5" --upgrade
+  - pip install "pytest>=4.1.0" --upgrade
 
 # command to run tests
 script: pynt package

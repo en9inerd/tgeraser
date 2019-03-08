@@ -60,26 +60,43 @@ def cast_to_int(num: str, name: str) -> int:
         raise TgEraserException(f"Error: '{name}' should be integer.")
 
 
+def get_credentials(args: Dict[str, Any]) -> Dict[str, str]:
+    """Presents credentials dict from specified source"""
+
+    path_to_file = os.path.abspath(os.path.expanduser(args["--input-file"]))
+    path_to_directory = os.path.dirname(path_to_file) + "/"
+
+    creds = {}  # type: Dict[str, Any]
+    if args["--json"]:
+        creds = get_credentials_from_json(
+            args["--json"], path_to_directory, args["session_name"]
+        )
+    elif args["--environment-variables"]:
+        creds = get_credentials_from_env(path_to_directory)
+    else:
+        if not os.path.exists(path_to_file):
+            answer = None
+            while answer not in ("yes", "no", "y", "n"):
+                answer = input("Do you want create file? (y/n): ").lower()
+                if answer in ("yes", "y"):
+                    creds = create_credential_file(path_to_file, path_to_directory)
+                elif answer in ("no", "n"):
+                    exit(1)
+                else:
+                    print("Please enter yes or no.")
+        creds = get_credentials_from_yaml(
+            path_to_file, path_to_directory, args["session_name"]
+        )
+
+    return creds
+
+
 def get_credentials_from_yaml(
-    path: str, session_name: Optional[str] = None
+    path_to_file: str, path_to_directory: str, session_name: Optional[str] = None
 ) -> Dict[str, str]:
     """
     Returns credentials and certain session from YAML file
     """
-    path_to_file = os.path.abspath(os.path.expanduser(path))
-    path_to_directory = os.path.dirname(path_to_file) + "/"
-
-    if not os.path.exists(path_to_file):
-        answer = None
-        while answer not in ("yes", "no", "y", "n"):
-            answer = input("Do you want create file? (y/n): ").lower()
-            if answer in ("yes", "y"):
-                create_credential_file(path_to_file, path_to_directory)
-            elif answer in ("no", "n"):
-                exit(1)
-            else:
-                print("Please enter yes or no.")
-
     creds = yaml.load(open(path_to_file, "r"))
     check_credentials_dict(creds)
 
@@ -93,14 +110,18 @@ def get_credentials_from_yaml(
                 return {**creds["api_credentials"], **creds["sessions"][i]}
 
         raise TgEraserException(
-            "It can't find '{0}' session in credentials file.".format(session_name)
+            f"It can't find '{session_name}' session in credentials file."
         )
 
     else:
         print_header("Sessions")
         for i, cred in enumerate(creds["sessions"], start=1):
             sprint(
-                "{0}. {1}\t | {2}".format(i, cred["session_name"], cred["user_phone"])
+                "{0}. {1}\t | {2}".format(
+                    i,
+                    cred["session_name"],
+                    cred.get("user_phone", "Phone number wasn't specified"),
+                )
             )
 
         num = int(input("\nChoose session: ")) - 1
@@ -122,24 +143,26 @@ def create_credential_file(path: str, directory: str) -> Dict[str, str]:
     credentials = {
         "api_credentials": {"api_id": "", "api_hash": ""},
         "sessions": [{"session_name": "", "user_phone": ""}],
-    }  # type: Dict[str, Union[str, Any,]]
+    }  # type: Dict[str, Any]
 
     credentials["api_credentials"]["api_id"] = input("Enter api_id: ")
     credentials["api_credentials"]["api_hash"] = input("Enter api_hash: ")
 
     credentials["sessions"][0]["session_name"] = input("Enter session_name: ")
-    credentials["sessions"][0]["user_phone"] = input("Enter user_phone (+1234567890): ")
 
     i: int = 0
-    while not phone_pattern.search(credentials["sessions"][0]["user_phone"]):
-        i += 1
-        if i == 4:
-            raise TgEraserException("Incorrect phone number. Exiting...")
-
-        print("Incorrect phone number. Try again.")
+    while True:
         credentials["sessions"][0]["user_phone"] = input(
             "Enter user_phone (+1234567890): "
         )
+        if not phone_pattern.search(credentials["sessions"][0]["user_phone"]):
+            print("Incorrect phone number. Try again.")
+        else:
+            break
+
+        i += 1
+        if i == 3:
+            raise TgEraserException("Incorrect phone number. Exiting...")
 
     with open(path, "w") as yaml_file:
         yaml.dump(credentials, yaml_file, default_flow_style=False)
@@ -166,14 +189,12 @@ def get_credentials_from_json(
                 return {**creds["api_credentials"], **creds["sessions"][i]}
 
         raise TgEraserException(
-            "It can't find '{0}' session in credentials file.".format(session_name)
+            f"It can't find '{session_name}' session in credentials file."
         )
     else:
         print_header("Sessions")
         for i, cred in enumerate(creds["sessions"], start=1):
-            sprint(
-                "{0}. {1}\t | {2}".format(i, cred["session_name"], cred["user_phone"])
-            )
+            sprint(f"{i}. {cred['session_name']}\t | {cred['user_phone']}")
 
         num = int(input("\nChoose session: ")) - 1
         print("Chosen: " + creds["sessions"][num]["session_name"] + "\n")
@@ -185,16 +206,12 @@ def get_credentials_from_json(
 
 
 def get_credentials_from_env(path: str) -> Dict[str, Any]:
+    """Gets credentials from environment variables"""
     API_ID = get_env("TG_API_ID", "Enter your API ID: ", int)
     API_HASH = get_env("TG_API_HASH", "Enter your API hash: ")
     SESSION = get_env("TG_SESSION", "Enter session name: ")
-    USER_PHONE = get_env("TG_PHONE", "Enter phone number (+1234567890): ")
-    return {
-        "api_id ": API_ID,
-        "api_hash": API_HASH,
-        "session_name": SESSION,
-        "user_phone": USER_PHONE,
-    }
+    SESSION = path + SESSION + ".session"
+    return {"api_id ": API_ID, "api_hash": API_HASH, "session_name": SESSION}
 
 
 def check_credentials_dict(creds: Dict[str, Any]) -> None:
@@ -209,5 +226,3 @@ def check_credentials_dict(creds: Dict[str, Any]) -> None:
         raise TgEraserException("Credentials file doesn't contain sessions.")
     if not creds["sessions"][0]["session_name"]:
         raise TgEraserException("Credentials file doesn't contain session_name.")
-    if not creds["sessions"][0]["user_phone"]:
-        raise TgEraserException("Credentials file doesn't contain user_phone.")

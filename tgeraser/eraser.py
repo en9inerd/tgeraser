@@ -72,7 +72,7 @@ class Eraser(TelegramClient):  # type: ignore
         # Check authorization
         if not loop.run_until_complete(self.is_user_authorized()):
             print("First run. Sending code request...")
-            if kwargs["user_phone"]:
+            if kwargs.get("user_phone", None):
                 user_phone = kwargs["user_phone"]
             else:
                 user_phone = input("Enter your phone: ")
@@ -132,7 +132,7 @@ class Eraser(TelegramClient):  # type: ignore
 
         print_header("Dialogs")
         for i, entity in enumerate(entities, start=1):
-            sprint("{0}. {1}\t | {2}".format(i, get_display_name(entity), entity.id))
+            sprint(f"{i}. {get_display_name(entity)}\t | {entity.id}")
 
         num = cast_to_int(await async_input("Choose peer: "), "peer")
         self.__entity = entities[int(num) - 1]
@@ -146,9 +146,7 @@ class Eraser(TelegramClient):  # type: ignore
         """
         messages_to_delete = list(self.__messages_to_delete)
         print_header(
-            "Delete {0} of my messages in chat {1}".format(
-                len(messages_to_delete), self.__display_name
-            )
+            f"Delete {messages_to_delete} of my messages in chat {self.__display_name}"
         )
         for chunk_data in chunks(
             messages_to_delete, 100
@@ -158,7 +156,7 @@ class Eraser(TelegramClient):  # type: ignore
             else:
                 r = await self(DeleteMessagesRequest(self.__entity, chunk_data))
             if r.pts_count:
-                print("Number of deleted messages: {0}".format(r.pts_count))
+                print(f"Number of deleted messages: {r.pts_count}")
             sleep(1)
 
         print_header("Erasing is finished.")
@@ -191,9 +189,7 @@ class Eraser(TelegramClient):  # type: ignore
 
             if result.messages:
                 print(
-                    "Received: {0} messages. Offset: {1}.".format(
-                        len(result.messages), add_offset
-                    )
+                    f"Received: {len(result.messages)} messages. Offset: {add_offset}."
                 )
                 messages.extend(result.messages)
                 add_offset += len(result.messages)

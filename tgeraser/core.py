@@ -34,12 +34,7 @@ from docopt import docopt
 from . import Eraser
 from .__version__ import __version__
 from .exceptions import TgEraserException
-from .utils import (
-    cast_to_int,
-    get_credentials_from_json,
-    get_credentials_from_yaml,
-    get_credentials_from_env,
-)
+from .utils import cast_to_int, get_credentials
 
 loop = asyncio.get_event_loop()
 
@@ -65,21 +60,7 @@ def entry() -> None:
                 os.kill(pid, signal.SIGKILL)
 
     try:
-        if arguments["--json"]:
-            credentials = get_credentials_from_json(
-                arguments["--json"],
-                arguments["--input-file"],
-                arguments["<session_name>"],
-            )
-        elif arguments["--environment-variables"]:
-            credentials = get_credentials_from_env(arguments["--input-file"])
-        else:
-            credentials = get_credentials_from_yaml(
-                path=arguments["--input-file"],
-                session_name=arguments["<session_name>"]
-                if arguments["session"]
-                else None,
-            )
+        credentials = get_credentials(arguments)
 
         kwargs = {
             **credentials,

@@ -38,7 +38,6 @@ from .utils import (
     cast_to_int,
     get_credentials_from_json,
     get_credentials_from_yaml,
-    get_env,
     get_credentials_from_env,
 )
 

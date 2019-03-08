@@ -1,4 +1,6 @@
 # This will enable almost every single warning
+output-format: grouped
+
 allow-shorthand: false
 
 ignore-patterns:
@@ -8,11 +10,15 @@ pylint:
   run: false
 
 mccabe:
-  run: false
+  options:
+    max-complexity: 22
 
 pep8:
-  run: false
-
+  options:
+    max-line-length: 140
+    single-line-if-stmt: n
+  disable:
+    - E722
 pyroma:
   disable:
     - PYR19

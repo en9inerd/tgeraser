@@ -1,0 +1,13 @@
+include *.md
+include tgeraser/*.py
+recursive-include tgeraser *.py
+include AUTHORS
+include LICENSE
+prune *.lock
+prune Pipfile
+prune build.py
+prune build_utils.py
+prune *.txt
+prune *.yml
+prune pylintrc.ini
+prune test

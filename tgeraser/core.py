@@ -71,19 +71,21 @@ def entry() -> None:
             "limit": arguments["--limit"],
         }
 
+        client = Eraser(**kwargs)
         while True:
-            client = Eraser(**kwargs)
             loop.run_until_complete(client.run())
             if arguments["--time-period"]:
                 print(
-                    "({0})\tNext erasing will be in {1} seconds.".format(
+                    "\n({0})\tNext erasing will be in {1} seconds.".format(
                         time.strftime("%Y-%m-%d, %H:%M:%S", time.gmtime()),
                         arguments["--time-period"],
                     )
                 )
-                time.sleep(int(arguments["--time-period"]))
+                time.sleep(arguments["--time-period"])
             else:
                 break
+        loop.run_until_complete(client.disconnect())
+        loop.close()
     except KeyboardInterrupt:
         print("\nExiting...")
     except Exception:

@@ -443,6 +443,7 @@ def check_setup_py():
 @task(
     # pin_dependencies,
     dead_code,
+    jiggle_version,
     check_setup_py,
     compile_md,
     compile_py,
@@ -450,7 +451,6 @@ def check_setup_py():
     lint,
     # coverage,
     nose_tests,
-    jiggle_version,
     detect_secrets,
 )
 @skip_if_no_change("package")

@@ -50,7 +50,7 @@ class Eraser(TelegramClient):  # type: ignore
             connection=ConnectionTcpAbridged,
         )
 
-        self.__limit = kwargs["limit"]
+        self.__limit = kwargs["limit"]  # Limit to retrieve the top dialogs
         self.__peer = (
             cast_to_int(kwargs["peer"], "peer")
             if kwargs["peer"] and kwargs["peer"].isdigit()
@@ -94,12 +94,6 @@ class Eraser(TelegramClient):  # type: ignore
 
                     self_user = loop.run_until_complete(self.sign_in(password=pw))
 
-        # Limit to retrieve the top dialogs
-        if kwargs["limit"]:
-            self.__limit = kwargs["limit"]
-        else:
-            self.__limit = None
-
     async def run(self) -> bool:
         """
         Runs deletion of messages from peer
@@ -135,7 +129,7 @@ class Eraser(TelegramClient):  # type: ignore
         for i, entity in enumerate(entities, start=1):
             sprint(f"{i}. {get_display_name(entity)}\t | {entity.id}")
 
-        num = cast_to_int(await async_input("Choose peer: "), "peer")
+        num = cast_to_int(await async_input("\nChoose peer: "), "peer")
         self.__entity = entities[int(num) - 1]
         self.__display_name = get_display_name(self.__entity)
         print(self.__display_name)

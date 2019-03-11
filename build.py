@@ -312,7 +312,7 @@ def mypy():
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    out, err = bash_process.communicate()  # wait
+    out = bash_process.communicate()[0]  # wait
     mypy_file = "mypy_errors.txt"
     with open(mypy_file, "w+") as lint_file:
         lines = out.decode().split("\n")

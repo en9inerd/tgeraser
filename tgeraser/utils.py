@@ -69,7 +69,7 @@ def get_credentials(args: Dict[str, Any]) -> Dict[str, str]:
     creds = {}  # type: Dict[str, Any]
     if args["--json"]:
         creds = get_credentials_from_json(
-            args["--json"], path_to_directory, args["session_name"]
+            args["--json"], path_to_directory, args["<session_name>"]
         )
     elif args["--environment-variables"]:
         creds = get_credentials_from_env(path_to_directory)
@@ -85,7 +85,7 @@ def get_credentials(args: Dict[str, Any]) -> Dict[str, str]:
                 else:
                     print("Please enter yes or no.")
         creds = get_credentials_from_yaml(
-            path_to_file, path_to_directory, args["session_name"]
+            path_to_file, path_to_directory, args["<session_name>"]
         )
 
     return creds

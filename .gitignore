@@ -109,3 +109,4 @@ mypy_errors.txt
 dead_code.txt
 Pipfile.lock
 detect-secrets-results.txt
+lint.txt

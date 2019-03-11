@@ -57,6 +57,7 @@ class Eraser(TelegramClient):  # type: ignore
             else kwargs["peer"]
         )
         self.__dialogs = kwargs["dialogs"]
+        self.__channels = kwargs["channels"]
         self.__entity = None
         self.__display_name = ""
         self.__messages_to_delete: Set[int] = set()
@@ -124,7 +125,7 @@ class Eraser(TelegramClient):  # type: ignore
             for entity in entities
             if isinstance(entity, User if self.__dialogs else Channel)
         ]
-        if not self.__dialogs:
+        if not self.__dialogs and not self.__channels:
             entities = [entity for entity in entities if entity.megagroup]
 
         if not entities:
@@ -142,7 +143,7 @@ class Eraser(TelegramClient):  # type: ignore
 
     async def __delete_messages_from_peer(self) -> bool:
         """
-        Message deleter method
+        Method deletes messages
         """
         messages_to_delete = list(self.__messages_to_delete)
         print_header(

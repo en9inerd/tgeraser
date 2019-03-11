@@ -65,6 +65,7 @@ def get_credentials(args: Dict[str, Any]) -> Dict[str, str]:
 
     path_to_file = os.path.abspath(os.path.expanduser(args["--input-file"]))
     path_to_directory = os.path.dirname(path_to_file) + "/"
+    os.makedirs(path_to_directory, exist_ok=True)
 
     creds = {}  # type: Dict[str, Any]
     if args["--json"]:
@@ -138,8 +139,6 @@ def create_credential_file(path: str, directory: str) -> Dict[str, str]:
     """
     creates credential YAML file
     """
-    os.makedirs(directory, exist_ok=True)
-
     phone_pattern = re.compile(
         r"(([+][(]?[0-9]{1,3}[)]?)|([(]?[0-9]{4}[)]?))\s*[)]?[-\s\.]?[(]?[0-9]{1,3}[)]?([-\s\.]?[0-9]{3})([-\s\.]?[0-9]{3,4})"
     )
@@ -173,6 +172,10 @@ def create_credential_file(path: str, directory: str) -> Dict[str, str]:
         yaml.dump(credentials, yaml_file, default_flow_style=False)
 
     print(f"Credentials file is created ({path}).")
+
+    credentials["sessions"][0]["session_name"] = (
+        directory + credentials["sessions"][0]["session_name"] + ".session"
+    )
 
     return {**credentials["api_credentials"], **credentials["sessions"][0]}
 
@@ -216,7 +219,7 @@ def get_credentials_from_env(path: str) -> Dict[str, Any]:
     API_HASH = get_env("TG_API_HASH", "Enter your API hash: ")
     SESSION = get_env("TG_SESSION", "Enter session name: ")
     SESSION = path + SESSION + ".session"
-    return {"api_id ": API_ID, "api_hash": API_HASH, "session_name": SESSION}
+    return {"api_id": API_ID, "api_hash": API_HASH, "session_name": SESSION}
 
 
 def check_credentials_dict(creds: Dict[str, Any]) -> None:

@@ -147,7 +147,7 @@ class Eraser(TelegramClient):  # type: ignore
         """
         messages_to_delete = list(self.__messages_to_delete)
         print_header(
-            f"Delete {messages_to_delete} of my messages in chat {self.__display_name}"
+            f"Delete {len(messages_to_delete)} of my messages in chat {self.__display_name}"
         )
         for chunk_data in chunks(
             messages_to_delete, 100

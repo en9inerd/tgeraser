@@ -84,9 +84,10 @@ def get_credentials(args: Dict[str, Any]) -> Dict[str, str]:
                     exit(1)
                 else:
                     print("Please enter yes or no.")
-        creds = get_credentials_from_yaml(
-            path_to_file, path_to_directory, args["<session_name>"]
-        )
+        else:
+            creds = get_credentials_from_yaml(
+                path_to_file, path_to_directory, args["<session_name>"]
+            )
 
     return creds
 
@@ -139,13 +140,17 @@ def create_credential_file(path: str, directory: str) -> Dict[str, str]:
     """
     os.makedirs(directory, exist_ok=True)
 
-    phone_pattern = re.compile(r"^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$")
+    phone_pattern = re.compile(
+        r"(([+][(]?[0-9]{1,3}[)]?)|([(]?[0-9]{4}[)]?))\s*[)]?[-\s\.]?[(]?[0-9]{1,3}[)]?([-\s\.]?[0-9]{3})([-\s\.]?[0-9]{3,4})"
+    )
     credentials = {
         "api_credentials": {"api_id": "", "api_hash": ""},
         "sessions": [{"session_name": "", "user_phone": ""}],
     }  # type: Dict[str, Any]
 
-    credentials["api_credentials"]["api_id"] = input("Enter api_id: ")
+    credentials["api_credentials"]["api_id"] = cast_to_int(
+        input("Enter api_id: "), "api_id"
+    )
     credentials["api_credentials"]["api_hash"] = input("Enter api_hash: ")
 
     credentials["sessions"][0]["session_name"] = input("Enter session_name: ")

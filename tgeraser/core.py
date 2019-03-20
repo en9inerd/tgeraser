@@ -3,12 +3,12 @@
 Tool deletes all your messages from chat/channel/dialog on Telegram.
 
 Usage:
-    tgeraser [ (session <session_name>) -cdl=NUM [ -i=FILENAME | -j=DICT | -e ] -p=ID -t=NUM ] | [ -k ]
+    tgeraser [ (session <session_name>) -cdl=NUM [ -i=FILEPATH | -j=DICT | -e ] -p=ID -t=NUM ] | [ -k ]
     tgeraser (-h | --help)
     tgeraser --version
 
 Options:
-    -i --input-file=FILENAME    Specify YAML file that contains credentials. [default: ~/.tgeraser/credentials.yml]
+    -i --input-file=FILEPATH    Specify YAML file that contains credentials. [default: ~/.tgeraser/credentials.yml]
     -j --json=DICT              Specify json string that contains credentials (double quotes must be escaped).
     -e --environment-variables  Get credentials from environment variables (TG_API_ID, TG_API_HASH, TG_SESSION).
     -d --dialogs                List only Dialogs (Chats by default).

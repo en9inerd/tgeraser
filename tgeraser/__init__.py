@@ -1,9 +1,7 @@
-# coding=utf-8
 """
 __init__.py
 """
+from . import __version__ as version
 from .eraser import Eraser
 
-from . import __version__ as version
-
-__version__ = version.__version__  # type: ignore
+__version__ = version.__version__

@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 small Python functions and classes which make common patterns shorter and easier
 """
@@ -15,10 +14,10 @@ from .exceptions import TgEraserException
 _ = Any, Dict, Iterable, List, Optional, Set, Union
 
 
-def chunks(l: List[Any], n: int) -> Iterable[Any]:
-    """Splits list l into chunks of size n. Returns generator"""
-    for i in range(0, len(l), n):
-        yield l[i : i + n]
+def chunks(input_list: List[Any], num: int) -> Iterable[Any]:
+    """Splits list input_list into chunks of size n. Returns generator"""
+    for i in range(0, len(input_list), num):
+        yield input_list[i : i + num]
 
 
 def sprint(string: str, *args: Any, **kwargs: Any) -> None:
@@ -48,16 +47,16 @@ def get_env(name: str, message: str, cast: Any = str) -> Any:
         value = input(message)
         try:
             return cast(value)
-        except ValueError as e:
-            print(e, file=sys.stderr)
+        except ValueError as err:
+            print(err, file=sys.stderr)
 
 
 def cast_to_int(num: str, name: str) -> int:
     """check if a string represents an int"""
     try:
         return int(num)
-    except ValueError:
-        raise TgEraserException(f"Error: '{name}' should be integer.")
+    except ValueError as err:
+        raise TgEraserException(f"Error: '{name}' should be integer.") from err
 
 
 def get_credentials(args: Dict[str, Any]) -> Dict[str, str]:
@@ -140,7 +139,9 @@ def create_credential_file(path: str, directory: str) -> Dict[str, str]:
     creates credential YAML file
     """
     phone_pattern = re.compile(
-        r"(([+][(]?[0-9]{1,3}[)]?)|([(]?[0-9]{4}[)]?))\s*[)]?[-\s\.]?[(]?[0-9]{1,3}[)]?([-\s\.]?[0-9]{3})([-\s\.]?[0-9]{3,4})"
+        r"(([+][(]?[0-9]{1,3}[)]?)|([(]?[0-9]{4}[)]?))"
+        r"\s*[)]?[-\s\.]?[(]?[0-9]{1,3}[)]?([-\s\.]?[0-9]{3})"
+        r"([-\s\.]?[0-9]{3,4})"
     )
     credentials = {
         "api_credentials": {"api_id": "", "api_hash": ""},
@@ -215,11 +216,11 @@ def get_credentials_from_json(
 
 def get_credentials_from_env(path: str) -> Dict[str, Any]:
     """Gets credentials from environment variables"""
-    API_ID = get_env("TG_API_ID", "Enter your API ID: ", int)
-    API_HASH = get_env("TG_API_HASH", "Enter your API hash: ")
-    SESSION = get_env("TG_SESSION", "Enter session name: ")
-    SESSION = path + SESSION + ".session"
-    return {"api_id": API_ID, "api_hash": API_HASH, "session_name": SESSION}
+    api_id = get_env("TG_API_ID", "Enter your API ID: ", int)
+    api_hash = get_env("TG_API_HASH", "Enter your API hash: ")
+    session = get_env("TG_SESSION", "Enter session name: ")
+    session = path + session + ".session"
+    return {"api_id": api_id, "api_hash": api_hash, "session_name": session}
 
 
 def check_credentials_dict(creds: Dict[str, Any]) -> None:

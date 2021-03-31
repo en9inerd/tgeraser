@@ -1,70 +1,64 @@
-# coding=utf-8
 """
-Things I wish pynt_contrib had.
+pynt_contrib utils.
 """
 import functools
 import os
 import socket
 import subprocess
-import sys
 import time
 
 from checksumdir import dirhash
-from semantic_version import Version
 
 PROJECT_NAME = "tgeraser"
 SRC = "."
 PYTHON = "python"
-IS_TRAVIS = "TRAVIS" in os.environ  # I double we will ever use travis...
-if IS_TRAVIS:
+IS_GITHUB_CI = "GITHUB_ACTIONS" in os.environ
+if IS_GITHUB_CI:
     PIPENV = ""
 else:
     PIPENV = "pipenv run"
 
-CURRENT_HASH = None
 
-
-def check_is_aws():
+def check_is_aws() -> bool:
     """
-    :rtype: bool
+    Checks if current machine on aws
     """
     name = socket.getfqdn()
     return "ip-" in name and ".ec2.internal" in name
 
 
-# bash to find what has change recently
-# find src/ -type f -print0 | xargs -0 stat -f "%m %N" | sort -rn | head -10 | cut -f2- -d" "
-class BuildState(object):
-    def __init__(self, what, where):
+class BuildState:
+    """
+    BuildState class
+    """
+
+    def __init__(self, what: str, where: str) -> None:
         self.what = what
         self.where = where
         if not os.path.exists(".build_state"):
             os.makedirs(".build_state")
-        self.state_file_name = ".build_state/last_change_{0}.txt".format(what)
+        self.state_file_name = f".build_state/last_change_{what}.txt"
 
-    def oh_never_mind(self):
+    def remove_state(self) -> None:
         """
-        If a task fails, we don't care if it didn't change since last, re-run,
-        :return:
+        If a task fails, we don't care if it didn't change since last, re-run
         """
         try:
             os.remove(self.state_file_name)
-        except:
+        except OSError:
             pass
 
-    def has_source_code_tree_changed(self):
+    def has_source_code_tree_changed(self) -> bool:
         """
         If a task succeeds & is re-run and didn't change, we might not
         want to re-run it if it depends *only* on source code
-        :return:
         """
-        global CURRENT_HASH
         directory = self.where
 
         # if CURRENT_HASH is None:
         # print("hashing " + directory)
         # print(os.listdir(directory))
-        CURRENT_HASH = dirhash(
+        current_hash = dirhash(
             directory,
             "md5",
             ignore_hidden=True,
@@ -77,9 +71,9 @@ class BuildState(object):
         if os.path.isfile(self.state_file_name):
             with open(self.state_file_name, "r+") as file:
                 last_hash = file.read()
-                if last_hash != CURRENT_HASH:
+                if last_hash != current_hash:
                     file.seek(0)
-                    file.write(CURRENT_HASH)
+                    file.write(current_hash)
                     file.truncate()
                     return True
                 else:
@@ -87,16 +81,21 @@ class BuildState(object):
 
         # no previous file, by definition not the same.
         with open(self.state_file_name, "w") as file:
-            file.write(CURRENT_HASH)
+            file.write(current_hash)
             return True
 
 
-def oh_never_mind(what):
+def remove_state(what) -> None:
+    """
+    If a task fails, we don't care if it didn't change since last, re-run
+    """
     state = BuildState(what, PROJECT_NAME)
-    state.oh_never_mind()
+    state.remove_state()
 
 
 def has_source_code_tree_changed(task_name, expect_file=None):
+    """
+    """
     if expect_file:
         if os.path.isdir(expect_file) and not os.listdir(expect_file):
             os.path.dirname(expect_file)
@@ -110,7 +109,8 @@ def has_source_code_tree_changed(task_name, expect_file=None):
 
 
 def skip_if_no_change(name, expect_files=None):
-    # https://stackoverflow.com/questions/5929107/decorators-with-parameters
+    """
+    """
     def real_decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -120,7 +120,7 @@ def skip_if_no_change(name, expect_files=None):
             try:
                 return func(*args, **kwargs)
             except:
-                oh_never_mind(name)
+                remove_state(name)
                 raise
 
         return wrapper
@@ -129,60 +129,50 @@ def skip_if_no_change(name, expect_files=None):
 
 
 def execute_with_environment(command, env):
-    # Python 2 code! Python 3 uses context managers.
-    shell_process = subprocess.Popen(
+    """
+    """
+    with subprocess.Popen(
         command.strip().replace("  ", " ").split(" "), env=env
-    )
-    value = shell_process.communicate()  # wait
-    if shell_process.returncode != 0:
-        print(
-            "Didn't get a zero return code, got : {0}".format(shell_process.returncode)
-        )
-        exit(-1)
-        # raise TypeError("Didn't get a zero return code, got : {0}".format(shell_process.returncode))
-    return value
+    ) as shell_process:
+        value = shell_process.communicate()
+        if shell_process.returncode != 0:
+            print(
+                f"Didn't get a zero return code, got : {shell_process.returncode}"
+            )
+            exit(-1)
+        return value
 
 
-def execute_get_text(command):  # type: (str) ->str
+def execute_get_text(command: str) -> str:
     """
     Execute shell command and return stdout txt
-    :param command:
-    :return:
     """
     try:
-        _ = subprocess.run
-        try:
-            completed = subprocess.run(
-                command,
-                check=True,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        except subprocess.CalledProcessError as cpe:
-            raise
-        else:
-            return completed.stdout.decode("utf-8") + completed.stderr.decode("utf-8")
-    except AttributeError:
-        try:
-            p = subprocess.Popen(command.split(" "), stdout=subprocess.PIPE)
-            out, err = p.communicate()
-        except subprocess.CalledProcessError as cpe:
-            raise
-        else:
-            return str(out) + str(err)
+        completed = subprocess.run(
+            command,
+            check=True,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except subprocess.CalledProcessError as cpe:
+        print(cpe.output)
+        raise
+    else:
+        return completed.stdout.decode("utf-8") + completed.stderr.decode("utf-8")
 
 
 def timed():
-    """This decorator prints the execution time for the decorated function."""
-
+    """
+    This decorator prints the execution time for the decorated function
+    """
     def real_decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             start = time.time()
             result = func(*args, **kwargs)
             end = time.time()
-            print("{} ran in {}s".format(func.__name__, round(end - start, 2)))
+            print(f"{func.__name__} ran in {round(end - start, 2)}s")
             return result
 
         return wrapper

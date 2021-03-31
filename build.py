@@ -1,8 +1,6 @@
-# coding=utf-8
 """
-Stop gap build script until I find something better.
+Pynt tasks
 """
-import glob
 import json
 import os
 import subprocess
@@ -11,30 +9,21 @@ from json import JSONDecodeError
 
 from pynt import task
 from pyntcontrib import execute, safe_cd
-from semantic_version import Version
+from build_utils import (check_is_aws, execute_get_text,
+                         execute_with_environment, skip_if_no_change, timed)
 
 PROJECT_NAME = "tgeraser"
 SRC = "."
 PYTHON = "python"
-IS_DJANGO = False
-IS_TRAVIS = "TRAVIS" in os.environ  # I double we will ever use travis...
-if IS_TRAVIS:
+IS_GITHUB_CI = "GITHUB_ACTIONS" in os.environ
+if IS_GITHUB_CI:
     PIPENV = ""
 else:
     PIPENV = "pipenv run"
 
-CURRENT_HASH = None
-
 MAC_LIBS = ":"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "."))
-from build_utils import (
-    check_is_aws,
-    execute_get_text,
-    execute_with_environment,
-    skip_if_no_change,
-    timed,
-)
 
 
 @task()
@@ -91,22 +80,6 @@ def compile_py():
 
 
 @task(compile_py)
-@timed()
-def prospector():
-    with safe_cd(SRC):
-        execute(
-            "pipenv",
-            *(
-                "run prospector {0} --profile tgeraser_style --pylint-config-file=pylintrc.ini --profile-path=.prospector".format(
-                    PROJECT_NAME
-                ).split(
-                    " "
-                )
-            )
-        )
-
-
-@task(compile_py, prospector)
 @skip_if_no_change("lint")
 def lint():
     """
@@ -117,15 +90,9 @@ def lint():
             execute("rm", "lint.txt")
 
     with safe_cd(SRC):
-        if IS_DJANGO:
-            django_bits = "--load-plugins pylint_django "
-        else:
-            django_bits = ""
-
-        # command += "{0}--rcfile=pylintrc.ini {1}".format(django_bits, PROJECT_NAME).split(" ")
         command = (
-            "{0} pylint {1} --rcfile=pylintrc.ini {2}".format(
-                PIPENV, django_bits, PROJECT_NAME
+            "{0} pylint --rcfile=pylintrc.ini {2}".format(
+                PIPENV, PROJECT_NAME
             )
             .strip()
             .replace("  ", " ")
@@ -177,22 +144,10 @@ def lint():
 @timed()
 def nose_tests():
     with safe_cd(SRC):
-        if IS_DJANGO:
-            # Django app
-            command = "{0} {1} manage.py test {2} -v 2".format(
-                PIPENV, PYTHON, PROJECT_NAME
-            ).strip()
-            # We'd expect this to be MAC or a build server.
-            my_env = config_pythonpath()
-            execute_with_environment(command, env=my_env)
-        else:
-            my_env = config_pythonpath()
-            if IS_TRAVIS:
-                command = "{0} -m nose {1}".format(PYTHON, "test").strip()
-            else:
-                command = "{0} {1} -m nose {2}".format(PIPENV, PYTHON, "test").strip()
-            print(command)
-            execute_with_environment(command, env=my_env)
+        my_env = config_pythonpath()
+        command = "{0} {1} -m nose {2}".format(PIPENV, PYTHON, "test").strip()
+        print(command)
+        execute_with_environment(command, env=my_env)
 
 
 def config_pythonpath():
@@ -220,7 +175,7 @@ def dead_code():
     """
     with safe_cd(SRC):
         exclusions = "--exclude *settings.py,migrations/,*models.py,*_fake.py,*tests.py,*ui/admin.py"
-        if IS_TRAVIS:
+        if IS_GITHUB_CI:
             command = (
                 "{0} vulture {1} {2}".format(PYTHON, PROJECT_NAME, exclusions)
                 .strip()
@@ -256,20 +211,6 @@ def coverage():
     print("Coverage tests always re-run")
     with safe_cd(SRC):
         my_env = config_pythonpath()
-        # You will need something like this in pytest.ini
-        # By default, pytest is VERY restrictive in the file names it will match.
-        #
-        # [pytest]
-        # DJANGO_SETTINGS_MODULE = core.settings
-        # python_files = tests.py test_*.py *_tests.py test*_*.py *_test*.py
-        if not os.path.exists("pytest.ini") and IS_DJANGO:
-            print(
-                "pytest.ini MUST exist for Django test detection or too few tests are found."
-            )
-            exit(-1)
-            return
-
-        my_env = config_pythonpath()
         command = "{0} py.test {1} --cov={2} --cov-report html:coverage --cov-fail-under 55  --verbose".format(
             PIPENV, "test", PROJECT_NAME
         )
@@ -283,9 +224,8 @@ def pip_check():
     Are packages ok?
     """
     execute("pip", "check")
-    if PIPENV and not IS_TRAVIS:
+    if PIPENV and not IS_GITHUB_CI:
         execute("pipenv", "check")
-    execute("safety", "check", "-r", "requirements_dev.txt")
 
 
 @task()
@@ -297,7 +237,7 @@ def mypy():
     if sys.version_info < (3, 4):
         print("Mypy doesn't work on python < 3.4")
         return
-    if IS_TRAVIS:
+    if IS_GITHUB_CI:
         command = "{0} -m mypy {1} --ignore-missing-imports --strict".format(
             PYTHON, PROJECT_NAME
         ).strip()
@@ -385,34 +325,6 @@ def detect_secrets():
 
 @task()
 @timed()
-def compile_md():
-    with safe_cd(SRC):
-        execute(
-            "pandoc",
-            *("--from=markdown --to=rst --output=README.rst README.md".split(" "))
-        )
-
-
-@task()
-@timed()
-def jiggle_version():
-    with safe_cd(SRC):
-        command = "pip install jiggle_version --upgrade"
-        execute(*(command.split(" ")))
-        command = "{0} jiggle_version here --module={1}".format(
-            PIPENV, PROJECT_NAME
-        ).strip()
-        result = execute_get_text(command)
-        print(result)
-        command = "{0} jiggle_version find --module={1}".format(
-            PIPENV, PROJECT_NAME
-        ).strip()
-        result = execute_get_text(command)
-        print(result)
-
-
-@task()
-@timed()
 def pin_dependencies():
     """
     Create requirement*.txt
@@ -421,14 +333,14 @@ def pin_dependencies():
         execute(*("{0} pipenv_to_requirements".format(PIPENV).strip().split(" ")))
 
 
-@task(compile_md)
+@task()
 @timed()
 def check_setup_py():
     """
     Setup.py checks package things including README.rst
     """
     with safe_cd(SRC):
-        if IS_TRAVIS:
+        if IS_GITHUB_CI:
             execute(PYTHON, *("setup.py check -r -s".split(" ")))
         else:
             execute(
@@ -443,9 +355,7 @@ def check_setup_py():
 @task(
     # pin_dependencies,
     dead_code,
-    jiggle_version,
     check_setup_py,
-    compile_md,
     compile_py,
     mypy,
     lint,
@@ -474,7 +384,7 @@ def upload_package():
     Upload
     """
     with safe_cd(SRC):
-        if IS_TRAVIS:
+        if IS_GITHUB_CI:
             pass
         else:
             execute(

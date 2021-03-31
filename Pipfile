@@ -4,25 +4,26 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-vulture = "*"
-jiggle-version = "*"
+isort = "*"
 black = "*"
-prospector = {extras = ["with-everything"],version = "*"}
 mypy = "*"
 detect-secrets = "*"
 twine = "*"
 pylint = "*"
-checksumdir = "*"
 pynt = "*"
 pynt-contrib = "*"
-semantic_version = "*"
-nose = "*"
-pipenv-to-requirements = "*"
+pytest = "*"
+pytest-cov = "*"
+python-semantic-release = "*"
+checksumdir = "*"
 
 [packages]
-pyyaml = ">=4.2b4"
+pyyaml = "*"
 docopt = "*"
 telethon = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.9"
+
+[pipenv]
+allow_prereleases = true

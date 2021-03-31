@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 Eraser class
 """
@@ -12,11 +11,11 @@ from telethon import TelegramClient
 from telethon.errors import SessionPasswordNeededError
 from telethon.network import ConnectionTcpAbridged
 from telethon.tl.functions.channels import DeleteMessagesRequest
-from telethon.tl.functions.messages import (
-    DeleteMessagesRequest as DeleteMessagesRequestFromUser,
-)
+from telethon.tl.functions.messages import \
+    DeleteMessagesRequest as DeleteMessagesRequestFromUser
 from telethon.tl.functions.messages import SearchRequest
-from telethon.tl.types import Channel, InputMessagesFilterEmpty, InputUserSelf, User
+from telethon.tl.types import (Channel, InputMessagesFilterEmpty,
+                               InputUserSelf, User)
 from telethon.utils import get_display_name
 
 from .exceptions import TgEraserException

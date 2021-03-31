@@ -1,5 +1,4 @@
-# coding=utf-8
 """
-Version, updated by jiggle_version
+Version, updated by python-semantic-release
 """
-__version__ = "0.3.3"  # Jiggle Version Was Here
+__version__ = "0.3.3"

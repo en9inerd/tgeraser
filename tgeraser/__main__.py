@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 Code so python -m will executed
 """

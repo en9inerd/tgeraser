@@ -1,4 +1,3 @@
-# coding=utf-8
 """
 Tool deletes all your messages from chat/channel/dialog on Telegram.
 
@@ -20,13 +19,12 @@ Options:
     -h --help                   Show this screen.
     --version                   Show version.
 
-"""
+"""  # pylint: disable=line-too-long
 
 import asyncio
 import os
 import signal
 import subprocess
-import sys
 import time
 import traceback
 
@@ -56,7 +54,7 @@ def entry() -> None:
         cmd = subprocess.Popen(["ps", "-A"], stdout=subprocess.PIPE)
         out = cmd.communicate()[0]
         for line in out.splitlines():
-            if "tgeraser" in line:
+            if b"tgeraser" in line:
                 pid = int(line.split(None, 1)[0])
                 os.kill(pid, signal.SIGKILL)
 
@@ -88,8 +86,8 @@ def entry() -> None:
         loop.close()
     except KeyboardInterrupt:
         print("\nExiting...")
-    except Exception:
-        traceback.print_exc(file=sys.stdout)
+    except Exception as err:  # pylint: disable=broad-except
+        traceback.print_tb(err.__traceback__)
 
 
 if __name__ == "__main__":

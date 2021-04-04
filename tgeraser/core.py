@@ -31,7 +31,7 @@ import traceback
 from docopt import docopt
 
 from . import Eraser
-from .__version__ import __version__
+from . import __version__
 from .exceptions import TgEraserException
 from .utils import cast_to_int, get_credentials
 

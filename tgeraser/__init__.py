@@ -1,6 +1,5 @@
 """
 __init__.py
 """
+from . import __version__
 from .eraser import Eraser
-
-__version__ = "0.3.3"

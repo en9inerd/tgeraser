@@ -21,24 +21,22 @@ You need to specify own api_id and api_hash which you can get [here](https://my.
 Tool deletes all your messages from chat/channel/dialog on Telegram.
 
 Usage:
-    tgeraser [ (session <session_name>) -cdl=NUM [ -i=FILEPATH | -j=DICT | -e ] -p=ID -t=NUM ] | [ -k ]
-    tgeraser (-h | --help)
+    tgeraser [ (session <session_name>) -cdl NUM [ -i FILEPATH | -j DICT | -e ] -p PEER_ID ] | [ -k ]
+    tgeraser session <session_name> -p ID -t STRING
+    tgeraser -h | --help
     tgeraser --version
 
 Options:
-    -i --input-file=FILEPATH    Specify YAML file that contains credentials. [default: ~/.tgeraser/credentials.yml]
-    -j --json=DICT              Specify json string that contains credentials (double quotes must be escaped).
+    -i --input-file FILEPATH    Specify YAML file that contains credentials. [default: ~/.tgeraser/credentials.yml]
+    -j --json DICT              Specify json string that contains credentials (double quotes must be escaped).
     -e --environment-variables  Get credentials from environment variables (TG_API_ID, TG_API_HASH, TG_SESSION).
     -d --dialogs                List only Dialogs (Chats by default).
     -c --channels               List only Channels (Chats by default).
-    -p --peer=ID                Specify certain peer (chat/channel/dialog).
-    -l --limit=NUM              Show specified number of recent chats.
-    -t --time-period=NUM        Specify period for infinite loop to run messages deletion every NUM seconds.
-    -k --kill                   Kill background process if you specify --time option (only for Unix-like OS).
+    -p --peers PEER_ID          Specify certain peers by comma (chat/channel/dialog).
+    -l --limit NUM              Show specified number of recent chats.
+    -t --time-period STRING     Specify period for infinite loop to run messages deletion every X seconds/minutes/hours/days/weeks.
+                                Example: --time-period "3*days" OR --time-period "5*seconds"
+    -k --kill                   Kill existing background tgeraser processes (only for Unix-like OS).
     -h --help                   Show this screen.
     --version                   Show version.
 ```
-
-## TO DO list
-
-- web application based on Flask to delete all of your messages from chat/channel/dialog using tgeraser

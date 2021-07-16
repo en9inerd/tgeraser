@@ -9,6 +9,7 @@ from json import JSONDecodeError
 
 from pynt import task
 from pyntcontrib import execute, safe_cd
+
 from build_utils import (check_is_aws, execute_get_text,
                          execute_with_environment, skip_if_no_change, timed)
 
@@ -46,7 +47,11 @@ def update_pip_and_pipenv():
 @task()
 @timed()
 def clean():
-    pass
+    with safe_cd(SRC):
+        execute(
+            "rm", "-rf", ".mypy_cache", ".build_state", "dist", "build", PROJECT_NAME + ".egg-info",
+            "dead_code.txt", "mypy_errors.txt", "detect-secrets-results.txt", "lint.txt"
+        )
 
 
 @task()
@@ -91,7 +96,7 @@ def lint():
 
     with safe_cd(SRC):
         command = (
-            "{0} pylint --rcfile=pylintrc.ini {2}".format(
+            "{0} pylint --rcfile=pylintrc.ini {1}".format(
                 PIPENV, PROJECT_NAME
             )
             .strip()
@@ -142,10 +147,10 @@ def lint():
 
 @task(lint)
 @timed()
-def nose_tests():
+def pytests():
     with safe_cd(SRC):
         my_env = config_pythonpath()
-        command = "{0} {1} -m nose {2}".format(PIPENV, PYTHON, "test").strip()
+        command = "{0} {1} -m pytest {2}".format(PIPENV, PYTHON, "tests").strip()
         print(command)
         execute_with_environment(command, env=my_env)
 
@@ -200,21 +205,6 @@ def dead_code():
                 "Too many lines of dead code : {0}, max {1}".format(num_lines, cutoff)
             )
             exit(-1)
-
-
-@task()
-@timed()
-def coverage():
-    """
-    Do tests exercise enough code?
-    """
-    print("Coverage tests always re-run")
-    with safe_cd(SRC):
-        my_env = config_pythonpath()
-        command = "{0} py.test {1} --cov={2} --cov-report html:coverage --cov-fail-under 55  --verbose".format(
-            PIPENV, "test", PROJECT_NAME
-        )
-        execute_with_environment(command, my_env)
 
 
 @task()
@@ -330,37 +320,26 @@ def pin_dependencies():
     Create requirement*.txt
     """
     with safe_cd(SRC):
-        execute(*("{0} pipenv_to_requirements".format(PIPENV).strip().split(" ")))
+        def write_reqs(filename: str, command: str):
+            result = execute_get_text(command)
+            lines = result.split("\n")
+            with open(filename, "w") as output_reqs:
+                for i, line in enumerate(lines):
+                    if "Courtesy Notice:" not in line:
+                        output_reqs.writelines([line + ("\n" if i != len(lines)-1 else "")])
 
-
-@task()
-@timed()
-def check_setup_py():
-    """
-    Setup.py checks package things including README.rst
-    """
-    with safe_cd(SRC):
-        if IS_GITHUB_CI:
-            execute(PYTHON, *("setup.py check -r -s".split(" ")))
-        else:
-            execute(
-                *(
-                    "{0} {1} setup.py check -r -s".format(PIPENV, PYTHON)
-                    .strip()
-                    .split(" ")
-                )
-            )
+        write_reqs("requirements.txt", "{0} lock --requirements".format("pipenv"))
+        write_reqs("requirements-dev.txt", "{0} lock --requirements --dev".format("pipenv"))
 
 
 @task(
-    # pin_dependencies,
+    clean,
+    pin_dependencies,
     dead_code,
-    check_setup_py,
     compile_py,
     mypy,
     lint,
-    # coverage,
-    nose_tests,
+    # pytests,
     detect_secrets,
 )
 @skip_if_no_change("package")
@@ -371,7 +350,7 @@ def package():
             execute("rm", "-rf", folder)
 
     with safe_cd(SRC):
-        execute(PYTHON, "setup.py", "sdist", "--formats=gztar,zip")
+        execute(PYTHON, "-m", "build")
 
     os.system('say "package complete."')
 
@@ -388,7 +367,7 @@ def upload_package():
             pass
         else:
             execute(
-                *("{0} {1} setup.py upload".format(PIPENV, PYTHON).strip().split(" "))
+                *("{0} twine upload dist/*".format(PIPENV).strip().split(" "))
             )
 
 
@@ -396,7 +375,7 @@ def upload_package():
 @timed()
 def echo(*args, **kwargs):
     """
-    Pure diagnotics
+    Pure diagnostics
     """
     print(args)
     print(kwargs)

@@ -98,7 +98,7 @@ def get_credentials_from_yaml(
     """
     Returns credentials and certain session from YAML file
     """
-    creds = yaml.load(open(path_to_file, "r"))
+    creds = yaml.load(open(path_to_file, "r"), Loader=yaml.SafeLoader)
     check_credentials_dict(creds)
 
     if session_name:
@@ -107,7 +107,7 @@ def get_credentials_from_yaml(
                 creds["sessions"][i]["session_name"] = (
                     path_to_directory + session_name + ".session"
                 )
-                print(creds["sessions"][i]["session_name"])
+                print("Session file: " + creds["sessions"][i]["session_name"])
                 return {**creds["api_credentials"], **creds["sessions"][i]}
 
         raise TgEraserException(
@@ -194,7 +194,7 @@ def get_credentials_from_json(
         for i, cred in enumerate(creds["sessions"]):
             if cred["session_name"] == session_name:
                 creds["sessions"][i]["session_name"] = path + session_name + ".session"
-                print(creds["sessions"][i]["session_name"])
+                print("Session file: " + creds["sessions"][i]["session_name"])
                 return {**creds["api_credentials"], **creds["sessions"][i]}
 
         raise TgEraserException(

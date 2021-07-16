@@ -13,9 +13,9 @@ pylint = "*"
 pynt = "*"
 pynt-contrib = "*"
 pytest = "*"
-pytest-cov = "*"
 python-semantic-release = "*"
 checksumdir = "*"
+vulture = "*"
 
 [packages]
 pyyaml = "*"

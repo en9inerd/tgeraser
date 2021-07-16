@@ -2,22 +2,24 @@
 Eraser class
 """
 import asyncio
+import platform
 import sys
 from getpass import getpass
 from time import sleep
 from typing import Any, List, Set, Union
 
-from telethon import TelegramClient
+from telethon import TelegramClient, hints
 from telethon.errors import SessionPasswordNeededError
 from telethon.network import ConnectionTcpAbridged
 from telethon.tl.functions.channels import DeleteMessagesRequest
-from telethon.tl.functions.messages import \
-    DeleteMessagesRequest as DeleteMessagesRequestFromUser
+from telethon.tl.functions.messages import (
+    DeleteMessagesRequest as DeleteMessagesRequestFromUser,
+)
 from telethon.tl.functions.messages import SearchRequest
-from telethon.tl.types import (Channel, InputMessagesFilterEmpty,
-                               InputUserSelf, User)
+from telethon.tl.types import Channel, InputMessagesFilterEmpty, InputUserSelf, User
 from telethon.utils import get_display_name
 
+from .__version__ import VERSION
 from .exceptions import TgEraserException
 from .utils import cast_to_int, chunks, print_header, sprint
 
@@ -43,21 +45,20 @@ class Eraser(TelegramClient):  # type: ignore
 
     def __init__(self: TelegramClient, **kwargs: Any) -> None:
         super().__init__(
-            kwargs["session_name"],
-            kwargs["api_id"],
-            kwargs["api_hash"],
+            session=kwargs["session_name"],
+            api_id=kwargs["api_id"],
+            api_hash=kwargs["api_hash"],
             connection=ConnectionTcpAbridged,
+            device_model=platform.uname().system,
+            system_version=platform.uname().release,
+            app_version=VERSION,
         )
 
         self.__limit = kwargs["limit"]  # Limit to retrieve the top dialogs
-        self.__peer = (
-            cast_to_int(kwargs["peer"], "peer")
-            if kwargs["peer"] and kwargs["peer"].isdigit()
-            else kwargs["peer"]
-        )
+        self.__peers = kwargs["peers"].split(",") if kwargs["peers"] else []
         self.__dialogs = kwargs["dialogs"]
         self.__channels = kwargs["channels"]
-        self.__entity = None
+        self.__entities: List[hints.Entity] = []
         self.__display_name = ""
         self.__messages_to_delete: Set[int] = set()
 
@@ -86,26 +87,36 @@ class Eraser(TelegramClient):  # type: ignore
 
                 # Two-step verification may be enabled
                 except SessionPasswordNeededError:
-                    pw = getpass(
+                    password = getpass(
                         "Two step verification is enabled. "
                         "Please enter your password: "
                     )
 
-                    self_user = loop.run_until_complete(self.sign_in(password=pw))
+                    self_user = loop.run_until_complete(self.sign_in(password=password))
 
-    async def run(self) -> bool:
+    async def run(self) -> None:
         """
         Runs deletion of messages from peer
         """
-        if self.__peer:
-            try:
-                self.__entity = await self.get_entity(self.__peer)
-            except ValueError:
-                raise TgEraserException("Specified entity can't be found.")
+        if self.__peers:
+            for peer in self.__peers:
+                if peer.isdigit():
+                    peer = cast_to_int(peer, f"peer: {peer}")
+                try:
+                    self.__entities.append(await self.get_entity(peer))
+                except ValueError:
+                    raise TgEraserException(
+                        f"Specified entity '{peer}' can't be found."
+                    )
         else:
             await self.__get_entity()
-        self.__messages_to_delete.update(msg.id for msg in await self.__get_messages())
-        return await self.__delete_messages_from_peer()
+        for entity in self.__entities:
+            self.__display_name = get_display_name(entity)
+            self.__messages_to_delete.update(
+                msg.id for msg in await self.__get_messages(entity)
+            )
+            await self.__delete_messages_from_peer(entity)
+            self.__messages_to_delete.clear()
 
     async def __get_entity(self) -> None:
         """
@@ -129,12 +140,12 @@ class Eraser(TelegramClient):  # type: ignore
             sprint(f"{i}. {get_display_name(entity)}\t | {entity.id}")
 
         num = cast_to_int(await async_input("\nChoose peer: "), "peer")
-        self.__entity = entities[int(num) - 1]
-        self.__display_name = get_display_name(self.__entity)
+        self.__entities = [entities[int(num) - 1]]
+        self.__display_name = get_display_name(self.__entities[0])
         print(self.__display_name)
         print("Chosen: " + self.__display_name)
 
-    async def __delete_messages_from_peer(self) -> bool:
+    async def __delete_messages_from_peer(self, entity: hints.Entity) -> None:
         """
         Method deletes messages
         """
@@ -146,27 +157,32 @@ class Eraser(TelegramClient):  # type: ignore
             messages_to_delete, 100
         ):  # Because we can delete only 100 messages per request (Telegram API restrictions)
             if self.__dialogs:
-                r = await self(DeleteMessagesRequestFromUser(chunk_data, revoke=True))
+                result = await self(
+                    DeleteMessagesRequestFromUser(chunk_data, revoke=True)
+                )
             else:
-                r = await self(DeleteMessagesRequest(self.__entity, chunk_data))
-            if r.pts_count:
-                print(f"Number of deleted messages: {r.pts_count}")
+                result = await self(DeleteMessagesRequest(entity, chunk_data))
+            if result.pts_count:
+                print(f"Number of deleted messages: {result.pts_count}")
             sleep(1)
-
         print_header("Erasing is finished.")
-        return True
 
     async def __get_messages(
-        self, limit: int = 100, offset_id: int = 0, max_id: int = 0, min_id: int = 0
+        self,
+        entity: hints.Entity,
+        limit: int = 100,
+        offset_id: int = 0,
+        max_id: int = 0,
+        min_id: int = 0,
     ) -> List[Any]:
-        print_header("Getting messages...")
+        print_header(f"Getting messages from {self.__display_name}...")
         add_offset = 0
         messages: List[Any] = []
 
         while True:
             result = await self(
                 SearchRequest(
-                    peer=self.__entity,
+                    peer=entity,
                     q="",
                     filter=InputMessagesFilterEmpty(),
                     min_date=None,

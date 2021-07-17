@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.0.1 (2021-07-17)
+### Fix
+* **functionality:** Need to clear entities list every scheduled iteration ([`ec4df5d`](https://github.com/en9inerd/tgeraser/commit/ec4df5d1fe230e951ffdd729172a4ada723d94e0))
+
 ## v1.0.0 (2021-07-17)
 ### Feature
 * **package:** Update version ([`99b0418`](https://github.com/en9inerd/tgeraser/commit/99b04185f6edb3bd7216acf57a470cfe9044f55f))

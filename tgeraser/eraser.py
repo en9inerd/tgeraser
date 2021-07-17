@@ -117,6 +117,7 @@ class Eraser(TelegramClient):  # type: ignore
             )
             await self.__delete_messages_from_peer(entity)
             self.__messages_to_delete.clear()
+        self.__entities.clear()
 
     async def __get_entity(self) -> None:
         """

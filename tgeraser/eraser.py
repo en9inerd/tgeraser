@@ -143,7 +143,9 @@ class Eraser(TelegramClient):  # type: ignore
             if isinstance(entity, Channel) and not entity.megagroup
         ]
         self.chats = [entity for entity in entities if isinstance(entity, Chat)] + [
-            channel for channel in self.channels if channel.megagroup
+            entity
+            for entity in entities
+            if isinstance(entity, Channel) and entity.megagroup
         ]
 
         if self.__wipe_everything:

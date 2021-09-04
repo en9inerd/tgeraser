@@ -11,12 +11,14 @@ from typing import Any, List, Set, Union
 from telethon import TelegramClient, hints
 from telethon.errors import SessionPasswordNeededError
 from telethon.network import ConnectionTcpAbridged
-from telethon.tl.functions.channels import DeleteMessagesRequest
-from telethon.tl.functions.messages import (
-    DeleteMessagesRequest as DeleteMessagesRequestFromUser,
-)
 from telethon.tl.functions.messages import SearchRequest
-from telethon.tl.types import Channel, InputMessagesFilterEmpty, InputUserSelf, User
+from telethon.tl.types import (
+    Channel,
+    InputMessagesFilterEmpty,
+    InputUserSelf,
+    User,
+    Chat,
+)
 from telethon.utils import get_display_name
 
 from .__version__ import VERSION
@@ -58,9 +60,14 @@ class Eraser(TelegramClient):  # type: ignore
         self.__peers = kwargs["peers"].split(",") if kwargs["peers"] else []
         self.__dialogs = kwargs["dialogs"]
         self.__channels = kwargs["channels"]
+        self.__wipe_everything = kwargs["wipe_everything"]
         self.__entities: List[hints.Entity] = []
         self.__display_name = ""
         self.__messages_to_delete: Set[int] = set()
+
+        self.users: List[hints.EntityLike] = []
+        self.chats: List[hints.EntityLike] = []
+        self.channels: List[hints.EntityLike] = []
 
         # Check connection to the server
         print("Connecting to Telegram servers...")
@@ -104,12 +111,13 @@ class Eraser(TelegramClient):  # type: ignore
                     peer = cast_to_int(peer, f"peer: {peer}")
                 try:
                     self.__entities.append(await self.get_entity(peer))
-                except ValueError:
+                except ValueError as err:
                     raise TgEraserException(
                         f"Specified entity '{peer}' can't be found."
-                    )
+                    ) from err
         else:
             await self.__get_entity()
+
         for entity in self.__entities:
             self.__display_name = get_display_name(entity)
             self.__messages_to_delete.update(
@@ -119,19 +127,41 @@ class Eraser(TelegramClient):  # type: ignore
             self.__messages_to_delete.clear()
         self.__entities.clear()
 
+    async def __filter_entities(self) -> List[hints.EntityLike]:
+        """
+        Returns requested entities
+        """
+        entities = [d.entity for d in await self.get_dialogs(limit=self.__limit)]
+        self.users = [
+            entity
+            for entity in entities
+            if isinstance(entity, User) and not entity.is_self
+        ]
+        self.channels = [
+            entity
+            for entity in entities
+            if isinstance(entity, Channel) and not entity.megagroup
+        ]
+        self.chats = [entity for entity in entities if isinstance(entity, Chat)] + [
+            entity
+            for entity in entities
+            if isinstance(entity, Channel) and entity.megagroup
+        ]
+
+        if self.__wipe_everything:
+            return entities
+        elif self.__dialogs:
+            return self.users
+        elif self.__channels:
+            return self.channels
+        else:
+            return self.chats
+
     async def __get_entity(self) -> None:
         """
         Returns chosen peer
         """
-        entities = [d.entity for d in await self.get_dialogs(limit=self.__limit)]
-
-        entities = [
-            entity
-            for entity in entities
-            if isinstance(entity, User if self.__dialogs else Channel)
-        ]
-        if not self.__dialogs and not self.__channels:
-            entities = [entity for entity in entities if entity.megagroup]
+        entities = await self.__filter_entities()
 
         if not entities:
             raise TgEraserException("You aren't joined to any chat.")
@@ -141,7 +171,7 @@ class Eraser(TelegramClient):  # type: ignore
             sprint(f"{i}. {get_display_name(entity)}\t | {entity.id}")
 
         num = cast_to_int(await async_input("\nChoose peer: "), "peer")
-        self.__entities = [entities[int(num) - 1]]
+        self.__entities = [entities[num - 1]]
         self.__display_name = get_display_name(self.__entities[0])
         print(self.__display_name)
         print("Chosen: " + self.__display_name)
@@ -157,20 +187,15 @@ class Eraser(TelegramClient):  # type: ignore
         for chunk_data in chunks(
             messages_to_delete, 100
         ):  # Because we can delete only 100 messages per request (Telegram API restrictions)
-            if self.__dialogs:
-                result = await self(
-                    DeleteMessagesRequestFromUser(chunk_data, revoke=True)
-                )
-            else:
-                result = await self(DeleteMessagesRequest(entity, chunk_data))
-            if result.pts_count:
-                print(f"Number of deleted messages: {result.pts_count}")
+            result = await self.delete_messages(entity, chunk_data, revoke=True)
+            if result[0].pts_count:
+                print(f"Number of deleted messages: {result[0].pts_count}")
             sleep(1)
         print_header("Erasing is finished.")
 
     async def __get_messages(
         self,
-        entity: hints.Entity,
+        entity: hints.EntityLike,
         limit: int = 100,
         offset_id: int = 0,
         max_id: int = 0,

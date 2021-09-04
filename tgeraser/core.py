@@ -3,7 +3,8 @@ Tool deletes all your messages from chat/channel/dialog on Telegram.
 
 Usage:
     tgeraser [ (session <session_name>) -cdl NUM [ -i FILEPATH | -j DICT | -e ] -p PEER_ID ] | [ -k ]
-    tgeraser session <session_name> -p ID -t STRING
+    tgeraser session <session_name> -p PEER_ID -t STRING
+    tgeraser session <session_name> -w
     tgeraser -h | --help
     tgeraser --version
 
@@ -13,6 +14,7 @@ Options:
     -e --environment-variables  Get credentials from environment variables (TG_API_ID, TG_API_HASH, TG_SESSION).
     -d --dialogs                List only Dialogs (Chats by default).
     -c --channels               List only Channels (Chats by default).
+    -w --wipe-everything        Delete ALL messages from all chats/channels/dialogs that you have in list.
     -p --peers PEER_ID          Specify certain peers by comma (chat/channel/dialog).
     -l --limit NUM              Show specified number of recent chats.
     -t --time-period STRING     Specify period for infinite loop to run messages deletion every X seconds/minutes/hours/days/weeks.
@@ -29,7 +31,6 @@ import signal
 import subprocess
 import sys
 import time
-import traceback
 
 from docopt import docopt
 
@@ -83,6 +84,7 @@ def entry() -> None:
             "channels": arguments["--channels"],
             "peers": arguments["--peers"],
             "limit": arguments["--limit"],
+            "wipe_everything": arguments["--wipe-everything"]
         }
 
         client = Eraser(**kwargs)
@@ -103,8 +105,8 @@ def entry() -> None:
         loop.close()
     except KeyboardInterrupt:
         print("\nExiting...")
-    except Exception as err:  # pylint: disable=broad-except
-        traceback.print_tb(err.__traceback__)
+    except Exception as err:
+        raise TgEraserException(err) from err
 
 
 if __name__ == "__main__":

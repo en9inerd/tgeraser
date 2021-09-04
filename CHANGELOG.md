@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.0 (2021-09-04)
+### Feature
+* Add 'wipe-everything' option ([`b4384d7`](https://github.com/en9inerd/tgeraser/commit/b4384d71f88be60799fbffb94ed7047ae8030104))
+
+### Fix
+* Fix entity filtering ([`88985c7`](https://github.com/en9inerd/tgeraser/commit/88985c71b583d77ffeece80842e43b2cf0838ff6))
+
 ## v1.0.1 (2021-07-17)
 ### Fix
 * **functionality:** Need to clear entities list every scheduled iteration ([`ec4df5d`](https://github.com/en9inerd/tgeraser/commit/ec4df5d1fe230e951ffdd729172a4ada723d94e0))

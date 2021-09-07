@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.1 (2021-09-07)
+### Fix
+* Fix `wipe everything` option ([`71678c3`](https://github.com/en9inerd/tgeraser/commit/71678c3d5652e4eca69a75e1d66cc9065205a9bc))
+
 ## v1.1.0 (2021-09-04)
 ### Feature
 * Add 'wipe-everything' option ([`b4384d7`](https://github.com/en9inerd/tgeraser/commit/b4384d71f88be60799fbffb94ed7047ae8030104))

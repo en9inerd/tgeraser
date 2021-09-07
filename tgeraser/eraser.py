@@ -115,6 +115,8 @@ class Eraser(TelegramClient):  # type: ignore
                     raise TgEraserException(
                         f"Specified entity '{peer}' can't be found."
                     ) from err
+        elif self.__wipe_everything:
+            self.__entities = await self.__filter_entities()
         else:
             await self.__get_entity()
 

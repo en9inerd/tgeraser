@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.2 (2023-07-09)
+
+### Fix
+
+* Update dependency versions ([`72ce1b4`](https://github.com/en9inerd/tgeraser/commit/72ce1b4cb11d7a99f7e73fc4439025b78ee5304a))
+
 ## v1.1.1 (2021-09-07)
 ### Fix
 * Fix `wipe everything` option ([`71678c3`](https://github.com/en9inerd/tgeraser/commit/71678c3d5652e4eca69a75e1d66cc9065205a9bc))

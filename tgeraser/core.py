@@ -39,7 +39,7 @@ from .exceptions import TgEraserException
 from .utils import cast_to_int, get_credentials
 
 
-async def entry() -> None:
+async def main() -> None:
     """
     Entry function
     """
@@ -105,5 +105,12 @@ async def entry() -> None:
         raise TgEraserException(err) from err
 
 
+def entry() -> None:
+    """
+    Entry point function
+    """
+    asyncio.run(main())
+
+
 if __name__ == "__main__":
-    asyncio.run(entry())
+    entry()

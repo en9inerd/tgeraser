@@ -2,6 +2,13 @@
 
 
 
+## v1.2.1 (2023-09-26)
+
+### Fix
+
+* fix: fix some output ([`4b1d1ba`](https://github.com/en9inerd/tgeraser/commit/4b1d1ba90149c96fe0362c79a40c7108f99008a0))
+
+
 ## v1.2.0 (2023-09-26)
 
 ### Feature

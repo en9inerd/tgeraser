@@ -70,10 +70,6 @@ def formatting():
             if "reformatted " in line:
                 file = line[len("reformatted ") :].strip()
                 changed.append(file)
-        for change in changed:
-            command = "git add {0}".format(change)
-            print(command)
-            execute(*(command.split(" ")))
 
 
 @task(clean, formatting)

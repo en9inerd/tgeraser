@@ -2,9 +2,9 @@
 Tool deletes all your messages from chat/channel/dialog on Telegram.
 
 Usage:
-    tgeraser [ (session <session_name>) -cdl NUM [ -i FILEPATH | -j DICT | -e ] -p PEER_ID ] | [ -k ]
+    tgeraser [(session <session_name>) --entity-type TYPE -l NUM [-i FILEPATH | -j DICT | -e] -p PEER_ID] | [-k]
     tgeraser session <session_name> -p PEER_ID -t STRING
-    tgeraser session <session_name> -w
+    tgeraser session <session_name> -w [--entity-type TYPE]
     tgeraser -h | --help
     tgeraser --version
 
@@ -12,9 +12,8 @@ Options:
     -i --input-file FILEPATH    Specify YAML file that contains credentials. [default: ~/.tgeraser/credentials.yml]
     -j --json DICT              Specify json string that contains credentials (double quotes must be escaped).
     -e --environment-variables  Get credentials from environment variables (TG_API_ID, TG_API_HASH, TG_SESSION).
-    -d --dialogs                List only Dialogs (Chats by default).
-    -c --channels               List only Channels (Chats by default).
-    -w --wipe-everything        Delete ALL messages from all chats/channels/dialogs that you have in list.
+    -w --wipe-everything        Delete ALL messages from all entities of a certain type that you have in list.
+    --entity-type TYPE          Available types: any, chat, channel, dialog. [default: chat]
     -p --peers PEER_ID          Specify certain peers by comma (chat/channel/dialog).
     -l --limit NUM              Show specified number of recent chats.
     -t --time-period STRING     Specify period for infinite loop to run messages deletion every X seconds/minutes/hours/days/weeks.
@@ -39,10 +38,8 @@ from .__version__ import VERSION
 from .exceptions import TgEraserException
 from .utils import cast_to_int, get_credentials
 
-loop = asyncio.get_event_loop()
 
-
-def entry() -> None:
+async def entry() -> None:
     """
     Entry function
     """
@@ -76,20 +73,20 @@ def entry() -> None:
         sys.exit(0)
 
     try:
-        credentials = get_credentials(arguments)
+        credentials = await get_credentials(arguments)
 
         kwargs = {
             **credentials,
-            "dialogs": arguments["--dialogs"],
-            "channels": arguments["--channels"],
             "peers": arguments["--peers"],
             "limit": arguments["--limit"],
-            "wipe_everything": arguments["--wipe-everything"]
+            "wipe_everything": arguments["--wipe-everything"],
+            "entity_type": arguments["--entity-type"],
         }
 
-        client = Eraser(**kwargs)
+        client = Eraser(**credentials)
         while True:
-            loop.run_until_complete(client.run())
+            await client.init(**kwargs)
+            await client.run()
             if arguments["--time-period"]:
                 print(
                     "\n({0})\tNext erasing will be in {1} {2}.".format(
@@ -98,16 +95,15 @@ def entry() -> None:
                         period[1],
                     )
                 )
-                time.sleep(int(period[0]) * periods[period[1]])
+                await asyncio.sleep(int(period[0]) * periods[period[1]])
             else:
                 break
-        client.disconnect()
-        loop.close()
-    except KeyboardInterrupt:
-        print("\nExiting...")
+        await client.disconnect()
+    except asyncio.CancelledError as err:
+        print("\n\nCancelled by user.\n", file=sys.stderr)
     except Exception as err:
         raise TgEraserException(err) from err
 
 
 if __name__ == "__main__":
-    entry()
+    asyncio.run(entry())

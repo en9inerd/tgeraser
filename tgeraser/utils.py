@@ -1,6 +1,7 @@
 """
 small Python functions and classes which make common patterns shorter and easier
 """
+import asyncio
 import json
 import os
 import re
@@ -12,6 +13,18 @@ import yaml
 from .exceptions import TgEraserException
 
 _ = Any, Dict, Iterable, List, Optional, Set, Union
+
+
+async def async_input(prompt: str) -> str:
+    """
+    Python's ``input()`` is blocking, which means the event loop we set
+    above can't be running while we're blocking there. This method will
+    let the loop run while we wait for input.
+    """
+    print(prompt, end="", flush=True)
+    return (
+        await asyncio.get_running_loop().run_in_executor(None, sys.stdin.readline)
+    ).rstrip()
 
 
 def chunks(input_list: List[Any], num: int) -> Iterable[Any]:
@@ -39,12 +52,12 @@ def print_header(title: str) -> None:
     sprint("=={}==".format("=" * len(title)))
 
 
-def get_env(name: str, message: str, cast: Any = str) -> Any:
+async def get_env(name: str, message: str, cast: Any = str) -> Any:
     """Helper to get environment variables interactively"""
     if name in os.environ:
         return os.environ[name]
     while True:
-        value = input(message)
+        value = await async_input(message)
         try:
             return cast(value)
         except ValueError as err:
@@ -59,7 +72,7 @@ def cast_to_int(num: str, name: str) -> int:
         raise TgEraserException(f"Error: '{name}' should be integer.") from err
 
 
-def get_credentials(args: Dict[str, Any]) -> Dict[str, str]:
+async def get_credentials(args: Dict[str, Any]) -> Dict[str, str]:
     """Presents credentials dict from specified source"""
 
     path_to_file = os.path.abspath(os.path.expanduser(args["--input-file"]))
@@ -68,31 +81,33 @@ def get_credentials(args: Dict[str, Any]) -> Dict[str, str]:
 
     creds = {}  # type: Dict[str, Any]
     if args["--json"]:
-        creds = get_credentials_from_json(
+        creds = await get_credentials_from_json(
             args["--json"], path_to_directory, args["<session_name>"]
         )
     elif args["--environment-variables"]:
-        creds = get_credentials_from_env(path_to_directory)
+        creds = await get_credentials_from_env(path_to_directory)
     else:
         if not os.path.exists(path_to_file):
             answer = None
             while answer not in ("yes", "no", "y", "n"):
-                answer = input("Do you want create file? (y/n): ").lower()
+                answer = (await async_input("Do you want create file? (y/n): ")).lower()
                 if answer in ("yes", "y"):
-                    creds = create_credential_file(path_to_file, path_to_directory)
+                    creds = await create_credential_file(
+                        path_to_file, path_to_directory
+                    )
                 elif answer in ("no", "n"):
                     exit(1)
                 else:
                     print("Please enter yes or no.")
         else:
-            creds = get_credentials_from_yaml(
+            creds = await get_credentials_from_yaml(
                 path_to_file, path_to_directory, args["<session_name>"]
             )
 
     return creds
 
 
-def get_credentials_from_yaml(
+async def get_credentials_from_yaml(
     path_to_file: str, path_to_directory: str, session_name: Optional[str] = None
 ) -> Dict[str, str]:
     """
@@ -125,7 +140,7 @@ def get_credentials_from_yaml(
                 )
             )
 
-        num = int(input("\nChoose session: ")) - 1
+        num = int(await async_input("\nChoose session: ")) - 1
         print("Chosen: " + creds["sessions"][num]["session_name"] + "\n")
 
         creds["sessions"][num]["session_name"] = (
@@ -134,7 +149,7 @@ def get_credentials_from_yaml(
         return {**creds["api_credentials"], **creds["sessions"][num]}
 
 
-def create_credential_file(path: str, directory: str) -> Dict[str, str]:
+async def create_credential_file(path: str, directory: str) -> Dict[str, str]:
     """
     creates credential YAML file
     """
@@ -149,15 +164,17 @@ def create_credential_file(path: str, directory: str) -> Dict[str, str]:
     }  # type: Dict[str, Any]
 
     credentials["api_credentials"]["api_id"] = cast_to_int(
-        input("Enter api_id: "), "api_id"
+        await async_input("Enter api_id: "), "api_id"
     )
-    credentials["api_credentials"]["api_hash"] = input("Enter api_hash: ")
+    credentials["api_credentials"]["api_hash"] = await async_input("Enter api_hash: ")
 
-    credentials["sessions"][0]["session_name"] = input("Enter session_name: ")
+    credentials["sessions"][0]["session_name"] = await async_input(
+        "Enter session_name: "
+    )
 
     i: int = 0
     while True:
-        credentials["sessions"][0]["user_phone"] = input(
+        credentials["sessions"][0]["user_phone"] = await async_input(
             "Enter user_phone (+1234567890): "
         )
         if not phone_pattern.search(credentials["sessions"][0]["user_phone"]):
@@ -181,7 +198,7 @@ def create_credential_file(path: str, directory: str) -> Dict[str, str]:
     return {**credentials["api_credentials"], **credentials["sessions"][0]}
 
 
-def get_credentials_from_json(
+async def get_credentials_from_json(
     json_str: str, path: str, session_name: str
 ) -> Dict[str, Any]:
     """
@@ -205,7 +222,7 @@ def get_credentials_from_json(
         for i, cred in enumerate(creds["sessions"], start=1):
             sprint(f"{i}. {cred['session_name']}\t | {cred['user_phone']}")
 
-        num = int(input("\nChoose session: ")) - 1
+        num = int(await async_input("\nChoose session: ")) - 1
         print("Chosen: " + creds["sessions"][num]["session_name"] + "\n")
 
         creds["sessions"][num]["session_name"] = (
@@ -214,11 +231,11 @@ def get_credentials_from_json(
         return {**creds["api_credentials"], **creds["sessions"][num]}
 
 
-def get_credentials_from_env(path: str) -> Dict[str, Any]:
+async def get_credentials_from_env(path: str) -> Dict[str, Any]:
     """Gets credentials from environment variables"""
-    api_id = get_env("TG_API_ID", "Enter your API ID: ", int)
-    api_hash = get_env("TG_API_HASH", "Enter your API hash: ")
-    session = get_env("TG_SESSION", "Enter session name: ")
+    api_id = await get_env("TG_API_ID", "Enter your API ID: ", int)
+    api_hash = await get_env("TG_API_HASH", "Enter your API hash: ")
+    session = await get_env("TG_SESSION", "Enter session name: ")
     session = path + session + ".session"
     return {"api_id": api_id, "api_hash": api_hash, "session_name": session}
 

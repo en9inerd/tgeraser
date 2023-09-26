@@ -16,6 +16,7 @@ pytest = "*"
 python-semantic-release = "*"
 checksumdir = "*"
 vulture = "*"
+types-pyyaml = "*"
 
 [packages]
 pyyaml = "*"
@@ -23,7 +24,7 @@ docopt = "*"
 telethon = "*"
 
 [requires]
-python_version = "3.10"
+python_version = "3.11"
 
 [pipenv]
 allow_prereleases = true

@@ -123,9 +123,13 @@ class Eraser(TelegramClient):  # type: ignore
             print(
                 f"\nDeleted {number_of_deleted_msgs} messages of {len(messages_to_delete)} in '{self.__display_name}' entity."
             )
-            print(
-                f"Remaining {len(messages_to_delete) - number_of_deleted_msgs} messages can't be deleted without admin rights because they are service messages."
-            )
+            
+            if number_of_deleted_msgs < len(messages_to_delete):
+                print(
+                    f"Remaining {len(messages_to_delete) - number_of_deleted_msgs} messages can't be deleted without admin rights because they are service messages."
+                )
+
+            print("\n")
 
         self.__entities.clear()
 

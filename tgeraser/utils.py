@@ -78,8 +78,10 @@ async def get_credentials(args: Dict[str, Any]) -> Dict[str, Union[str, int]]:
                     json.dump(creds, file)
                 sprint(f"Credentials saved to '{path_to_creds_file}' file.")
 
-        creds["session_name"] = path_to_creds_dir + (
-            args["<session_name>"] or await choose_session(path_to_creds_dir)
+        creds["session_name"] = (
+            path_to_creds_dir
+            + "/"
+            + (args["<session_name>"] or await choose_session(path_to_creds_dir))
         )
     except Exception as e:
         raise TgEraserException(f"Error in get_credentials: {e}")

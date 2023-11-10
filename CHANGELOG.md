@@ -2,6 +2,13 @@
 
 
 
+## v1.2.3 (2023-11-10)
+
+### Fix
+
+* fix: update readme.md ([`71b761f`](https://github.com/en9inerd/tgeraser/commit/71b761ffbe79db95bd0a2393e5a2214940157a35))
+
+
 ## v1.2.2 (2023-11-10)
 
 ### Fix

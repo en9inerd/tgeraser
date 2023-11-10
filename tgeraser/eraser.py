@@ -55,10 +55,8 @@ class Eraser(TelegramClient):  # type: ignore
         # Check authorization
         if not await self.is_user_authorized():
             print("First run. Sending code request...")
-            if kwargs.get("user_phone", None):
-                user_phone = kwargs["user_phone"]
-            else:
-                user_phone = await async_input("Enter your phone: ")
+
+            user_phone = await async_input("Enter your phone: ")
             await self.sign_in(user_phone)
 
             self_user = None

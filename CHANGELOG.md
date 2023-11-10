@@ -2,6 +2,19 @@
 
 
 
+## v1.2.2 (2023-11-10)
+
+### Fix
+
+* fix: remove unnecessary functionality
+
+- remove YAML format support
+- store only creds in credentials file
+- improve documentation - readme.md
+- update dependencies
+- refactor code in utils.py ([`4778597`](https://github.com/en9inerd/tgeraser/commit/47785971403ec2b816b45b33382509a85b5baa24))
+
+
 ## v1.2.1 (2023-09-26)
 
 ### Fix

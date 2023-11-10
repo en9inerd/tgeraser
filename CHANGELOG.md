@@ -2,6 +2,13 @@
 
 
 
+## v1.2.4 (2023-11-10)
+
+### Fix
+
+* fix: fix a bug ([`ccebe39`](https://github.com/en9inerd/tgeraser/commit/ccebe391b5d2baebbb8642c2d133b47e4416b24f))
+
+
 ## v1.2.3 (2023-11-10)
 
 ### Fix

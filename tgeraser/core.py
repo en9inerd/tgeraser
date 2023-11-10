@@ -1,24 +1,22 @@
 """
-Tool deletes all your messages from chat/channel/dialog on Telegram.
+Tool deletes all your messages from chat/channel/conversation on Telegram.
 
 Usage:
-    tgeraser [(session <session_name>) --entity-type TYPE -l NUM [-i FILEPATH | -j DICT | -e] -p PEER_ID] | [-k]
+    tgeraser [(session <session_name>) --entity-type TYPE -l NUM [-d PATH] -p PEER_ID] | [-k]
     tgeraser session <session_name> -p PEER_ID -t STRING
     tgeraser session <session_name> -w [--entity-type TYPE]
     tgeraser -h | --help
     tgeraser --version
 
 Options:
-    -i --input-file FILEPATH    Specify YAML file that contains credentials. [default: ~/.tgeraser/credentials.yml]
-    -j --json DICT              Specify json string that contains credentials (double quotes must be escaped).
-    -e --environment-variables  Get credentials from environment variables (TG_API_ID, TG_API_HASH, TG_SESSION).
-    -w --wipe-everything        Delete ALL messages from all entities of a certain type that you have in list.
-    --entity-type TYPE          Available types: any, chat, channel, dialog. [default: chat]
-    -p --peers PEER_ID          Specify certain peers by comma (chat/channel/dialog).
-    -l --limit NUM              Show specified number of recent chats.
-    -t --time-period STRING     Specify period for infinite loop to run messages deletion every X seconds/minutes/hours/days/weeks.
+    -d --directory PATH         Specify a directory where your sessions are stored. [default: ~/.tgeraser/]
+    -w --wipe-everything        Delete all messages from all entities of a certain type that you have in your dialog list.
+    --entity-type TYPE          Available types: any, chat, channel, user. [default: chat]
+    -p --peers PEER_ID          Specify certain peers by comma (chat/channel/user).
+    -l --limit NUM              Show a specified number of recent chats.
+    -t --time-period STRING     Specify a period for an infinite loop to run messages deletion every X seconds/minutes/hours/days/weeks.
                                 Example: --time-period "3*days" OR --time-period "5*seconds"
-    -k --kill                   Kill existing background tgeraser processes (only for Unix-like OS).
+    -k --kill                   Terminate existing background TgEraser processes (only for Unix-like OS).
     -h --help                   Show this screen.
     --version                   Show version.
 
@@ -33,8 +31,8 @@ import time
 
 from docopt import docopt
 
-from .eraser import Eraser
 from .__version__ import VERSION
+from .eraser import Eraser
 from .exceptions import TgEraserException
 from .utils import cast_to_int, get_credentials
 

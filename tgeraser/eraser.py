@@ -2,28 +2,19 @@
 Eraser class
 """
 
-import asyncio
 import platform
 from getpass import getpass
-from typing import Any, List, Set, Union
+from typing import Any, List
 
 from telethon import TelegramClient, hints
 from telethon.errors import SessionPasswordNeededError
 from telethon.network import ConnectionTcpAbridged
-from telethon.tl.functions.messages import SearchRequest
-from telethon.tl.types import (
-    Channel,
-    InputUserSelf,
-    User,
-    Chat,
-)
+from telethon.tl.types import Channel, Chat, InputUserSelf, User
 from telethon.utils import get_display_name
 
 from .__version__ import VERSION
 from .exceptions import TgEraserException
 from .utils import async_input, cast_to_int, print_header, sprint
-
-_ = Any, List, Set, Union
 
 
 class Eraser(TelegramClient):  # type: ignore
@@ -123,7 +114,7 @@ class Eraser(TelegramClient):  # type: ignore
             print(
                 f"\nDeleted {number_of_deleted_msgs} messages of {len(messages_to_delete)} in '{self.__display_name}' entity."
             )
-            
+
             if number_of_deleted_msgs < len(messages_to_delete):
                 print(
                     f"Remaining {len(messages_to_delete) - number_of_deleted_msgs} messages can't be deleted without admin rights because they are service messages."
@@ -141,7 +132,7 @@ class Eraser(TelegramClient):  # type: ignore
 
         if self.__entity_type == "any":
             return entities
-        elif self.__entity_type == "dialog":
+        elif self.__entity_type == "user":
             return [
                 entity
                 for entity in entities
@@ -165,7 +156,7 @@ class Eraser(TelegramClient):  # type: ignore
             ]
         else:
             raise TgEraserException(
-                f"Error: wrong entity type: '{self.__entity_type}'. Use 'any', 'dialog', 'chat' or 'channel'."
+                f"Error: wrong entity type: '{self.__entity_type}'. Use 'any', 'user', 'chat' or 'channel'."
             )
 
     async def __get_entity(self) -> None:

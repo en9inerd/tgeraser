@@ -19,7 +19,6 @@ vulture = "*"
 types-pyyaml = "*"
 
 [packages]
-pyyaml = "*"
 docopt = "*"
 telethon = "*"
 

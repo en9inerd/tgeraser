@@ -4,8 +4,6 @@
 
 TgEraser is a Python tool that allows you to delete all your messages from a chat, channel, or conversation on Telegram without requiring admin privileges. Official Telegram clients do not provide a one-click solution to delete all your messages; instead, you have to manually select and delete messages, with a limit of 100 messages per batch. TgEraser solves this problem and offers a convenient way to mass-delete your messages on Telegram.
 
-TgEraser decides this problem.
-
 ## Installation
 
 ```

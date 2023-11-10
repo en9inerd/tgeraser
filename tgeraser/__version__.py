@@ -2,4 +2,4 @@
 Version file
 """
 
-VERSION = "1.2.4"
+VERSION = "1.2.5"

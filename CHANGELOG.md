@@ -2,23 +2,20 @@
 
 
 
+## v1.2.5 (2023-11-10)
+
+### Fix
+
+* fix: remove unused code ([`d1aeafe`](https://github.com/en9inerd/tgeraser/commit/d1aeafee79b30c93ddbb5e26edfc002232c8443b))
+
+
 ## v1.2.4 (2023-11-10)
 
 ### Fix
 
 * fix: fix a bug ([`ccebe39`](https://github.com/en9inerd/tgeraser/commit/ccebe391b5d2baebbb8642c2d133b47e4416b24f))
 
-
-## v1.2.3 (2023-11-10)
-
-### Fix
-
 * fix: update readme.md ([`71b761f`](https://github.com/en9inerd/tgeraser/commit/71b761ffbe79db95bd0a2393e5a2214940157a35))
-
-
-## v1.2.2 (2023-11-10)
-
-### Fix
 
 * fix: remove unnecessary functionality
 

@@ -15,7 +15,7 @@ To use TgEraser, you'll need to provide your API credentials, which you can obta
 
 There are two methods to define `api_id` and `api_hash`:
 1. Set them as environment variables (`TG_API_ID` and `TG_API_HASH`).
-2. Allow the tool to prompt you for input during execution, with an option to save the credentials in a `credentials.json` file located in the same directory as the sessions.
+2. Allow the tool to prompt you for input during execution, with an option to save the credentials in a `credentials.json` file located in the same directory as the sessions (by default, `~/.tgeraser/`).
 
 ## Usage
 
@@ -43,3 +43,7 @@ Options:
 ```
 
 Executing the tool without options will guide you through the creation of your first user session. You can create sessions for multiple users using the `tgeraser session <new_session_name>` command.
+
+## Contributing
+
+If you have any issues or suggestions, please feel free to open an issue or submit a pull request.

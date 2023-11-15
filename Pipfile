@@ -16,7 +16,6 @@ pytest = "*"
 python-semantic-release = "*"
 checksumdir = "*"
 vulture = "*"
-types-pyyaml = "*"
 
 [packages]
 docopt = "*"

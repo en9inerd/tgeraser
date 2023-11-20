@@ -11,7 +11,7 @@ pip install tgeraser
 tgeraser
 ```
 
-To use TgEraser, you'll need to provide your API credentials, which you can obtain from [here](https://my.telegram.org/auth?to=apps).
+To use TgEraser, you'll need to provide `api_id` and `api_hash`, which you can obtain from [here](https://my.telegram.org/auth?to=apps).
 
 There are two methods to define `api_id` and `api_hash`:
 1. Set them as environment variables (`TG_API_ID` and `TG_API_HASH`).
@@ -20,7 +20,7 @@ There are two methods to define `api_id` and `api_hash`:
 ## Usage
 
 ```
-Tool deletes all your messages from chat/channel/conversation on Telegram.
+TgEraser deletes all your messages from a chat, channel, or conversation on Telegram without requiring admin privileges.
 
 Usage:
     tgeraser [(session <session_name>) --entity-type TYPE -l NUM [-d PATH] -p PEER_ID] | [-k]
@@ -42,7 +42,7 @@ Options:
     --version                   Show version.
 ```
 
-Executing the tool without options will guide you through the creation of your first user session. You can create sessions for multiple users using the `tgeraser session <new_session_name>` command.
+Executing the tool without options will guide you through the creation of your first user session. After that you can create sessions for multiple users using the `tgeraser session <new_session_name>` command.
 
 ## Contributing
 

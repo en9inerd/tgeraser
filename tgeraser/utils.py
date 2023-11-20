@@ -98,7 +98,7 @@ async def choose_session(directory: str) -> str:
         for i, session in enumerate(sessions):
             print(f"{i + 1}. {session}")
         session_number = cast_to_int(
-            await async_input("Enter session number: "), "session number"
+            await async_input("\nEnter session number: "), "session number"
         )
         return sessions[session_number - 1]
     else:

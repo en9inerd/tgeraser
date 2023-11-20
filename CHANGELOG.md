@@ -2,6 +2,13 @@
 
 
 
+## v1.2.7 (2023-11-20)
+
+### Fix
+
+* fix: properly formatted output and updated readme file ([`00f1e8c`](https://github.com/en9inerd/tgeraser/commit/00f1e8caa41153ab5741887e61920a0a7e6a9b45))
+
+
 ## v1.2.6 (2023-11-15)
 
 ### Fix

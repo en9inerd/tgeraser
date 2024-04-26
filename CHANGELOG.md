@@ -2,6 +2,13 @@
 
 
 
+## v1.2.8 (2024-04-26)
+
+### Fix
+
+* fix: update dependencies ([`f71b6f8`](https://github.com/en9inerd/tgeraser/commit/f71b6f8924018ef8aae8a733eeb680dc33555b2e))
+
+
 ## v1.2.7 (2023-11-20)
 
 ### Fix

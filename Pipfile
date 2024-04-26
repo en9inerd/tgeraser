@@ -13,7 +13,6 @@ pylint = "*"
 pynt = "*"
 pynt-contrib = "*"
 pytest = "*"
-python-semantic-release = "*"
 checksumdir = "*"
 vulture = "*"
 

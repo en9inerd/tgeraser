@@ -37,10 +37,19 @@ from .exceptions import TgEraserException
 from .utils import cast_to_int, get_credentials
 
 
+def signal_handler():
+    print("\nCtrl+C captured, exiting...")
+    sys.stdout.flush()
+    os._exit(0)
+
+
 async def main() -> None:
     """
     Entry function
     """
+    loop = asyncio.get_running_loop()
+    loop.add_signal_handler(signal.SIGINT, signal_handler)
+
     arguments = docopt(__doc__, version=VERSION)
     if arguments["--limit"]:
         arguments["--limit"] = cast_to_int(arguments["--limit"], "limit")
@@ -97,8 +106,6 @@ async def main() -> None:
             else:
                 break
         await client.disconnect()
-    except asyncio.CancelledError as err:
-        print("\n\nCancelled by user.\n", file=sys.stderr)
     except Exception as err:
         raise TgEraserException(err) from err
 

@@ -2,9 +2,9 @@
 Tool deletes all your messages from chat/channel/conversation on Telegram.
 
 Usage:
-    tgeraser [(session <session_name>) --entity-type TYPE -l NUM [-d PATH] -p PEER_ID] | [-k]
-    tgeraser session <session_name> -p PEER_ID -t STRING
-    tgeraser session <session_name> -w [--entity-type TYPE]
+    tgeraser [(session <session_name>) --entity-type TYPE -l NUM [-d PATH] -p PEER_ID -b STRING] | [-k]
+    tgeraser session <session_name> -p PEER_ID -t STRING [-b STRING]
+    tgeraser session <session_name> -w [--entity-type TYPE -b STRING]
     tgeraser -h | --help
     tgeraser --version
 
@@ -16,6 +16,8 @@ Options:
     -l --limit NUM              Show a specified number of recent chats.
     -t --time-period STRING     Specify a period for an infinite loop to run messages deletion every X seconds/minutes/hours/days/weeks.
                                 Example: --time-period "3*days" OR --time-period "5*seconds"
+    -b --before STRING          Delete messages only older than X seconds/minutes/hours/days/weeks.
+                                Example: --before "1*weeks" OR --before "365*days"
     -k --kill                   Terminate existing background TgEraser processes (only for Unix-like OS).
     -h --help                   Show this screen.
     --version                   Show version.
@@ -53,17 +55,25 @@ async def main() -> None:
     arguments = docopt(__doc__, version=VERSION)
     if arguments["--limit"]:
         arguments["--limit"] = cast_to_int(arguments["--limit"], "limit")
+
+    periods = {
+        "seconds": 1,
+        "minutes": 60,
+        "hours": 3600,
+        "days": 86400,
+        "weeks": 604800,
+    }
     if arguments["--time-period"]:
-        periods = {
-            "seconds": 1,
-            "minutes": 60,
-            "hours": 3600,
-            "days": 86400,
-            "weeks": 604800,
-        }
         period = arguments["--time-period"].split("*")
         if period[1] not in periods:
             raise TgEraserException("Time period is specified incorrectly.")
+
+    before = None
+    if arguments["--before"]:
+        before = arguments["--before"].split("*")
+        if before[1] not in periods:
+            raise TgEraserException("Before is specified incorrectly.")
+        before = int(before[0]) * periods[before[1]]
 
     if arguments["--kill"]:
         if os.name != "posix":
@@ -88,6 +98,7 @@ async def main() -> None:
             "limit": arguments["--limit"],
             "wipe_everything": arguments["--wipe-everything"],
             "entity_type": arguments["--entity-type"],
+            "before": before,
         }
 
         client = Eraser(**credentials)

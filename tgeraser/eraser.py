@@ -2,6 +2,7 @@
 Eraser class
 """
 
+import datetime
 import platform
 from getpass import getpass
 from typing import Any, List
@@ -43,6 +44,7 @@ class Eraser(TelegramClient):  # type: ignore
         self.__entity_type = kwargs["entity_type"]
         self.__entities: List[hints.Entity] = []
         self.__display_name = ""
+        self.__before = kwargs.get("before")
 
         # Check connection to the server
         print("Connecting to Telegram servers...")
@@ -93,13 +95,17 @@ class Eraser(TelegramClient):  # type: ignore
         else:
             await self.__get_entity()
 
+        offset_date = None
+        if self.__before is not None:
+            offset_date = datetime.datetime.now() - datetime.timedelta(seconds=self.__before)
+
         for entity in self.__entities:
             self.__display_name = get_display_name(entity)
             print_header(f"Getting messages from '{self.__display_name}'...")
             messages_to_delete = [
                 msg.id
                 for msg in await self.get_messages(
-                    entity, from_user=InputUserSelf(), limit=None, wait_time=None
+                    entity, from_user=InputUserSelf(), limit=None, wait_time=None, offset_date=offset_date
                 )
             ]
             print(f"\nFound {len(messages_to_delete)} messages to delete.")

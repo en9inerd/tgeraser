@@ -2,6 +2,17 @@
 
 
 
+## v1.3.0 (2024-06-09)
+
+### Feature
+
+* feat: add `--older-than` option ([`4bc6a63`](https://github.com/en9inerd/tgeraser/commit/4bc6a63049b5f52e9b8f595322bed661f8b8d033))
+
+### Refactor
+
+* refactor: improve readability ([`55e5574`](https://github.com/en9inerd/tgeraser/commit/55e5574aa6cca7516210f87db96a0cf06f48dcd7))
+
+
 ## v1.2.8 (2024-04-26)
 
 ### Fix

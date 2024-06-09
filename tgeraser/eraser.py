@@ -22,29 +22,33 @@ class Eraser(TelegramClient):  # type: ignore
     Subclass of TelegramClient class
     """
 
-    def __init__(self: TelegramClient, **credentials: Any) -> None:
+    def __init__(self: TelegramClient, **kwargs: Any) -> None:
         super().__init__(
-            session=credentials["session_name"],
-            api_id=credentials["api_id"],
-            api_hash=credentials["api_hash"],
+            session=kwargs["session_name"],
+            api_id=kwargs["api_id"],
+            api_hash=kwargs["api_hash"],
             connection=ConnectionTcpAbridged,
             device_model=platform.uname().system,
             system_version=platform.uname().release,
             app_version=VERSION,
         )
-
-    async def init(self, **kwargs: Any) -> None:
-        """
-        Initializes the client
-        """
-        self.__limit = kwargs["limit"]  # Limit to retrieve the top dialogs
+        self.__limit = kwargs["limit"]
         self.__peers = kwargs["peers"].split(",") if kwargs["peers"] else []
         self.__wipe_everything = kwargs["wipe_everything"]
         self.__entity_type = kwargs["entity_type"]
         self.__entities: List[hints.Entity] = []
-        self.__display_name = ""
 
-        # Check connection to the server
+    async def init(self) -> None:
+        """
+        Initializes the client
+        """
+        await self._connect_to_server()
+        await self._authorize_user()
+
+    async def _connect_to_server(self) -> None:
+        """
+        Connects to the Telegram server
+        """
         print("Connecting to Telegram servers...")
         try:
             await self.connect()
@@ -52,10 +56,12 @@ class Eraser(TelegramClient):  # type: ignore
             print("Initial connection failed. Retrying...")
             await self.connect()
 
-        # Check authorization
+    async def _authorize_user(self) -> None:
+        """
+        Authorizes the user
+        """
         if not await self.is_user_authorized():
             print("First run. Sending code request...")
-
             user_phone = await async_input("Enter your phone: ")
             await self.sign_in(user_phone)
 
@@ -64,8 +70,6 @@ class Eraser(TelegramClient):  # type: ignore
                 code = await async_input("Enter the code you just received: ")
                 try:
                     self_user = await self.sign_in(code=code)
-
-                # Two-step verification may be enabled
                 except SessionPasswordNeededError:
                     password = getpass(
                         "Two step verification is enabled. "
@@ -78,24 +82,42 @@ class Eraser(TelegramClient):  # type: ignore
         """
         Runs deletion of messages from peer
         """
-        if self.__peers:
-            for peer in self.__peers:
-                if peer.isdigit():
-                    peer = cast_to_int(peer, f"peer: {peer}")
-                try:
-                    self.__entities.append(await self.get_entity(peer))
-                except ValueError as err:
-                    raise TgEraserException(
-                        f"Specified entity '{peer}' can't be found."
-                    ) from err
-        elif self.__wipe_everything:
-            self.__entities = await self.__filter_entities()
-        else:
-            await self.__get_entity()
+        await self._determine_entities()
+        await self._delete_messages_from_entities()
+        self.__entities.clear()
 
+    async def _determine_entities(self) -> None:
+        """
+        Determines entities to delete messages from
+        """
+        if self.__peers:
+            await self._get_entities_by_peers()
+        elif self.__wipe_everything:
+            self.__entities = await self._filter_entities()
+        else:
+            await self._get_user_selected_entity()
+
+    async def _get_entities_by_peers(self) -> None:
+        """
+        Returns entities by peers
+        """
+        for peer in self.__peers:
+            if peer.isdigit():
+                peer = cast_to_int(peer, f"peer: {peer}")
+            try:
+                self.__entities.append(await self.get_entity(peer))
+            except ValueError as err:
+                raise TgEraserException(
+                    f"Specified entity '{peer}' can't be found."
+                ) from err
+
+    async def _delete_messages_from_entities(self) -> None:
+        """
+        Deletes messages from entities
+        """
         for entity in self.__entities:
-            self.__display_name = get_display_name(entity)
-            print_header(f"Getting messages from '{self.__display_name}'...")
+            display_name = get_display_name(entity)
+            print_header(f"Getting messages from '{display_name}'...")
             messages_to_delete = [
                 msg.id
                 for msg in await self.get_messages(
@@ -103,65 +125,53 @@ class Eraser(TelegramClient):  # type: ignore
                 )
             ]
             print(f"\nFound {len(messages_to_delete)} messages to delete.")
+            await self._delete_messages(entity, messages_to_delete, display_name)
 
-            print_header(f"Deleting messages from '{self.__display_name}'...")
-            result = await self.delete_messages(entity, messages_to_delete, revoke=True)
-            number_of_deleted_msgs = sum(
-                [result[i].pts_count for i in range(len(result))]
-            )
-            print(
-                f"\nDeleted {number_of_deleted_msgs} messages of {len(messages_to_delete)} in '{self.__display_name}' entity."
-            )
-
-            if number_of_deleted_msgs < len(messages_to_delete):
-                print(
-                    f"Remaining {len(messages_to_delete) - number_of_deleted_msgs} messages can't be deleted without admin rights because they are service messages."
-                )
-
-            print("\n")
-
-        self.__entities.clear()
-
-    async def __filter_entities(self) -> List[hints.EntityLike]:
+    async def _delete_messages(
+        self, entity: hints.Entity, messages_to_delete: List[int], display_name: str
+    ) -> None:
         """
-        Returns requested entities
+        Deletes messages
+        """
+        print_header(f"Deleting messages from '{display_name}'...")
+        result = await self.delete_messages(entity, messages_to_delete, revoke=True)
+        number_of_deleted_msgs = sum([result[i].pts_count for i in range(len(result))])
+        print(
+            f"\nDeleted {number_of_deleted_msgs} messages of {len(messages_to_delete)} in '{display_name}' entity."
+        )
+
+        if number_of_deleted_msgs < len(messages_to_delete):
+            print(
+                f"Remaining {len(messages_to_delete) - number_of_deleted_msgs} messages can't be deleted without admin rights because they are service messages."
+            )
+
+        print("\n")
+
+    async def _filter_entities(self) -> List[hints.EntityLike]:
+        """
+        Returns requested filtered entities
         """
         entities = [d.entity for d in await self.get_dialogs(limit=self.__limit)]
-
-        if self.__entity_type == "any":
-            return entities
-        elif self.__entity_type == "user":
-            return [
-                entity
-                for entity in entities
-                if isinstance(entity, User) and not entity.is_self
-            ]
-        elif self.__entity_type == "chat":
-            return [
-                entity
-                for entity in entities
-                if (
-                    isinstance(entity, Chat)
-                    or (isinstance(entity, Channel) and entity.megagroup)
-                    or (isinstance(entity, Channel) and entity.gigagroup)
-                )
-            ]
-        elif self.__entity_type == "channel":
-            return [
-                entity
-                for entity in entities
-                if isinstance(entity, Channel) and not entity.megagroup
-            ]
-        else:
+        entity_filters = {
+            "any": lambda e: True,
+            "user": lambda e: isinstance(e, User) and not e.is_self,
+            "chat": lambda e: isinstance(e, Chat)
+            or (isinstance(e, Channel) and (e.megagroup or e.gigagroup)),
+            "channel": lambda e: isinstance(e, Channel) and not e.megagroup,
+        }
+        if self.__entity_type not in entity_filters:
             raise TgEraserException(
                 f"Error: wrong entity type: '{self.__entity_type}'. Use 'any', 'user', 'chat' or 'channel'."
             )
+        return [
+            entity for entity in entities if entity_filters[self.__entity_type](entity)
+        ]
 
-    async def __get_entity(self) -> None:
+    async def _get_entity(self) -> None:
         """
         Returns chosen peer
         """
-        entities = await self.__filter_entities()
+        entities = await self._filter_entities()
 
         if not entities:
             raise TgEraserException("You aren't joined to any chat.")
@@ -172,5 +182,4 @@ class Eraser(TelegramClient):  # type: ignore
 
         num = cast_to_int(await async_input("\nChoose peer: "), "peer")
         self.__entities = [entities[num - 1]]
-        self.__display_name = get_display_name(self.__entities[0])
-        print("Chosen: " + self.__display_name)
+        print("Chosen: " + get_display_name(self.__entities[0]))

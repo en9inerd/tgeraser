@@ -34,10 +34,13 @@ from docopt import docopt
 from .__version__ import VERSION
 from .eraser import Eraser
 from .exceptions import TgEraserException
-from .utils import cast_to_int, get_credentials
+from .utils import cast_to_int, get_credentials, parse_time_period
 
 
 def signal_handler():
+    """
+    Signal handler
+    """
     print("\nCtrl+C captured, exiting...")
     sys.stdout.flush()
     os._exit(0)
@@ -51,37 +54,18 @@ async def main() -> None:
     loop.add_signal_handler(signal.SIGINT, signal_handler)
 
     arguments = docopt(__doc__, version=VERSION)
-    if arguments["--limit"]:
-        arguments["--limit"] = cast_to_int(arguments["--limit"], "limit")
+    arguments["--limit"] = (
+        cast_to_int(arguments["--limit"], "limit") if arguments["--limit"] else None
+    )
     if arguments["--time-period"]:
-        periods = {
-            "seconds": 1,
-            "minutes": 60,
-            "hours": 3600,
-            "days": 86400,
-            "weeks": 604800,
-        }
-        period = arguments["--time-period"].split("*")
-        if period[1] not in periods:
-            raise TgEraserException("Time period is specified incorrectly.")
+        period = parse_time_period(arguments["--time-period"], "--time-period")
 
     if arguments["--kill"]:
-        if os.name != "posix":
-            raise TgEraserException("You can't use '--kill' option on Windows.")
-        cmd = subprocess.Popen(["ps", "-A"], stdout=subprocess.PIPE)
-        out = cmd.communicate()[0]
-        current_pid = os.getpid()
-        for line in out.splitlines():
-            if b"tgeraser" in line:
-                pid = int(line.split(None, 1)[0])
-                if current_pid != pid:
-                    os.kill(pid, signal.SIGKILL)
-                    print("Process " + str(pid) + " successfully killed.")
+        kill_existing_processes()
         sys.exit(0)
 
     try:
         credentials = await get_credentials(arguments)
-
         kwargs = {
             **credentials,
             "peers": arguments["--peers"],
@@ -89,25 +73,54 @@ async def main() -> None:
             "wipe_everything": arguments["--wipe-everything"],
             "entity_type": arguments["--entity-type"],
         }
+        await run_eraser(kwargs, period if arguments["--time-period"] else None)
+    except ValueError as err:
+        print(f"ValueError: {err}")
+    except TgEraserException as err:
+        print(f"TgEraserException: {err}")
+    except Exception as err:
+        raise TgEraserException(f"An unexpected error occurred: {err}") from err
 
-        client = Eraser(**credentials)
+
+async def run_eraser(kwargs, period):
+    """
+    Runs the eraser
+    """
+    client = Eraser(**kwargs)
+    try:
         while True:
-            await client.init(**kwargs)
+            await client.init()
             await client.run()
-            if arguments["--time-period"]:
+            if period:
                 print(
                     "\n({0})\tNext erasing will be in {1} {2}.".format(
                         time.strftime("%Y-%m-%d, %H:%M:%S", time.gmtime()),
-                        period[0],
-                        period[1],
+                        period["value"],
+                        period["unit"],
                     )
                 )
-                await asyncio.sleep(int(period[0]) * periods[period[1]])
+                await asyncio.sleep(period["time"])
             else:
                 break
+    finally:
         await client.disconnect()
-    except Exception as err:
-        raise TgEraserException(err) from err
+
+
+def kill_existing_processes():
+    """
+    Kills existing background TgEraser processes
+    """
+    if os.name != "posix":
+        raise TgEraserException("You can't use '--kill' option on Windows.")
+    cmd = subprocess.Popen(["ps", "-A"], stdout=subprocess.PIPE)
+    out, _ = cmd.communicate()
+    current_pid = os.getpid()
+    for line in out.splitlines():
+        if b"tgeraser" in line:
+            pid = int(line.split(None, 1)[0])
+            if current_pid != pid:
+                os.kill(pid, signal.SIGKILL)
+                print("Process " + str(pid) + " successfully killed.")
 
 
 def entry() -> None:

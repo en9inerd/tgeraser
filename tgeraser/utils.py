@@ -83,6 +83,8 @@ async def get_credentials(args: Dict[str, Any]) -> Dict[str, Union[str, int]]:
             + "/"
             + (args["<session_name>"] or await choose_session(path_to_creds_dir))
         )
+    except FileNotFoundError as err:
+        raise TgEraserException(f"Error: {err}") from err
     except Exception as e:
         raise TgEraserException(f"Error in get_credentials: {e}")
 
@@ -112,3 +114,24 @@ def list_sessions(directory: str) -> list[str]:
         for file in os.listdir(directory)
         if file.endswith(".session")
     ]
+
+
+def parse_time_period(time_period: str, option_name: str) -> Dict[str, str | int]:
+    """
+    Parse time period
+    """
+    periods = {
+        "seconds": 1,
+        "minutes": 60,
+        "hours": 3600,
+        "days": 86400,
+        "weeks": 604800,
+    }
+    period = time_period.split("*")
+    if period[1] not in periods:
+        raise TgEraserException(f"'{option_name}' is specified incorrectly.")
+    return {
+        "time": int(period[0]) * periods[period[1]],
+        "unit": period[1],
+        "value": period[0],
+    }

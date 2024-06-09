@@ -2,6 +2,7 @@
 Eraser class
 """
 
+import datetime
 import platform
 from getpass import getpass
 from typing import Any, List
@@ -36,6 +37,7 @@ class Eraser(TelegramClient):  # type: ignore
         self.__peers = kwargs["peers"].split(",") if kwargs["peers"] else []
         self.__wipe_everything = kwargs["wipe_everything"]
         self.__entity_type = kwargs["entity_type"]
+        self.__older_than = kwargs["older_than"]
         self.__entities: List[hints.Entity] = []
 
     async def init(self) -> None:
@@ -115,13 +117,23 @@ class Eraser(TelegramClient):  # type: ignore
         """
         Deletes messages from entities
         """
+        offset_date = None
+        if self.__older_than is not None:
+            offset_date = datetime.datetime.now() - datetime.timedelta(
+                seconds=self.__older_than
+            )
+
         for entity in self.__entities:
             display_name = get_display_name(entity)
             print_header(f"Getting messages from '{display_name}'...")
             messages_to_delete = [
                 msg.id
                 for msg in await self.get_messages(
-                    entity, from_user=InputUserSelf(), limit=None, wait_time=None
+                    entity,
+                    from_user=InputUserSelf(),
+                    limit=None,
+                    wait_time=None,
+                    offset_date=offset_date,
                 )
             ]
             print(f"\nFound {len(messages_to_delete)} messages to delete.")
@@ -167,7 +179,7 @@ class Eraser(TelegramClient):  # type: ignore
             entity for entity in entities if entity_filters[self.__entity_type](entity)
         ]
 
-    async def _get_entity(self) -> None:
+    async def _get_user_selected_entity(self) -> None:
         """
         Returns chosen peer
         """

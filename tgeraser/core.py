@@ -2,9 +2,9 @@
 Tool deletes all your messages from chat/channel/conversation on Telegram.
 
 Usage:
-    tgeraser [(session <session_name>) --entity-type TYPE -l NUM [-d PATH] -p PEER_ID] | [-k]
-    tgeraser session <session_name> -p PEER_ID -t STRING
-    tgeraser session <session_name> -w [--entity-type TYPE]
+    tgeraser [(session <session_name>) --entity-type TYPE -l NUM [-d PATH] -p PEER_ID -o STRING] | [-k]
+    tgeraser session <session_name> -p PEER_ID -t STRING [-o STRING]
+    tgeraser session <session_name> -w [--entity-type TYPE -o STRING]
     tgeraser -h | --help
     tgeraser --version
 
@@ -16,6 +16,8 @@ Options:
     -l --limit NUM              Show a specified number of recent chats.
     -t --time-period STRING     Specify a period for an infinite loop to run messages deletion every X seconds/minutes/hours/days/weeks.
                                 Example: --time-period "3*days" OR --time-period "5*seconds"
+    -o --older-than STRING      Delete messages older than X seconds/minutes/hours/days/weeks.
+                                Example: --older-than "3*days" OR --older-than "5*seconds"
     -k --kill                   Terminate existing background TgEraser processes (only for Unix-like OS).
     -h --help                   Show this screen.
     --version                   Show version.
@@ -54,11 +56,17 @@ async def main() -> None:
     loop.add_signal_handler(signal.SIGINT, signal_handler)
 
     arguments = docopt(__doc__, version=VERSION)
-    arguments["--limit"] = (
-        cast_to_int(arguments["--limit"], "limit") if arguments["--limit"] else None
+    limit = cast_to_int(arguments["--limit"], "limit") if arguments["--limit"] else None
+    period = (
+        parse_time_period(arguments["--time-period"], "--time-period")
+        if arguments["--time-period"]
+        else None
     )
-    if arguments["--time-period"]:
-        period = parse_time_period(arguments["--time-period"], "--time-period")
+    older_than = (
+        parse_time_period(arguments["--older-than"], "--older-than")["time"]
+        if arguments["--older-than"]
+        else None
+    )
 
     if arguments["--kill"]:
         kill_existing_processes()
@@ -69,9 +77,10 @@ async def main() -> None:
         kwargs = {
             **credentials,
             "peers": arguments["--peers"],
-            "limit": arguments["--limit"],
+            "limit": limit,
             "wipe_everything": arguments["--wipe-everything"],
             "entity_type": arguments["--entity-type"],
+            "older_than": older_than,
         }
         await run_eraser(kwargs, period if arguments["--time-period"] else None)
     except ValueError as err:
@@ -82,7 +91,7 @@ async def main() -> None:
         raise TgEraserException(f"An unexpected error occurred: {err}") from err
 
 
-async def run_eraser(kwargs, period):
+async def run_eraser(kwargs: dict, period: dict = None) -> None:
     """
     Runs the eraser
     """

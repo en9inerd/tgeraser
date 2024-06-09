@@ -23,9 +23,9 @@ There are two methods to define `api_id` and `api_hash`:
 TgEraser deletes all your messages from a chat, channel, or conversation on Telegram without requiring admin privileges.
 
 Usage:
-    tgeraser [(session <session_name>) --entity-type TYPE -l NUM [-d PATH] -p PEER_ID] | [-k]
-    tgeraser session <session_name> -p PEER_ID -t STRING
-    tgeraser session <session_name> -w [--entity-type TYPE]
+    tgeraser [(session <session_name>) --entity-type TYPE -l NUM [-d PATH] -p PEER_ID -o STRING] | [-k]
+    tgeraser session <session_name> -p PEER_ID -t STRING [-o STRING]
+    tgeraser session <session_name> -w [--entity-type TYPE -o STRING]
     tgeraser -h | --help
     tgeraser --version
 
@@ -37,6 +37,8 @@ Options:
     -l --limit NUM              Show a specified number of recent chats.
     -t --time-period STRING     Specify a period for an infinite loop to run messages deletion every X seconds/minutes/hours/days/weeks.
                                 Example: --time-period "3*days" OR --time-period "5*seconds"
+    -o --older-than STRING      Delete messages older than X seconds/minutes/hours/days/weeks.
+                                Example: --older-than "3*days" OR --older-than "5*seconds"
     -k --kill                   Terminate existing background TgEraser processes (only for Unix-like OS).
     -h --help                   Show this screen.
     --version                   Show version.

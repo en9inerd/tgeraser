@@ -15,7 +15,14 @@ To use TgEraser, you'll need to provide `api_id` and `api_hash`, which you can o
 
 There are two methods to define `api_id` and `api_hash`:
 1. Set them as environment variables (`TG_API_ID` and `TG_API_HASH`).
-2. Allow the tool to prompt you for input during execution, with an option to save the credentials in a `credentials.json` file located in the same directory as the sessions (by default, `~/.tgeraser/`).
+2. Allow the tool to prompt you for input during first execution, with an option to save the credentials in a `credentials.json` file located in the same directory as the sessions (by default, `~/.tgeraser/`).
+Credentials file can be created/edited manually in the following format:
+```json
+{
+    "api_id": 111111,
+    "api_hash": "abcdef1234567890abcdef1234567890"
+}
+```
 
 ## Usage
 

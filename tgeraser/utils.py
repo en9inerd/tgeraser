@@ -52,7 +52,7 @@ async def get_credentials(args: Dict[str, Any]) -> Dict[str, Union[str, int]]:
     Get credentials from file or from user input
     """
     path_to_creds_dir = os.path.abspath(os.path.expanduser(args["--directory"]))
-    path_to_creds_file = path_to_creds_dir + "/credentials.json"
+    path_to_creds_file = os.path.join(path_to_creds_dir, "credentials.json")
     os.makedirs(path_to_creds_dir, exist_ok=True)
 
     creds = {}
@@ -78,10 +78,9 @@ async def get_credentials(args: Dict[str, Any]) -> Dict[str, Union[str, int]]:
                     json.dump(creds, file)
                 sprint(f"Credentials saved to '{path_to_creds_file}' file.")
 
-        creds["session_name"] = (
-            path_to_creds_dir
-            + "/"
-            + (args["<session_name>"] or await choose_session(path_to_creds_dir))
+        creds["session_name"] = os.path.join(
+            path_to_creds_dir,
+            args["<session_name>"] or await choose_session(path_to_creds_dir),
         )
     except FileNotFoundError as err:
         raise TgEraserException(f"Error: {err}") from err

@@ -1,6 +1,10 @@
 # CHANGELOG
 
+## v1.3.1 (2024-07-31)
 
+### Fix
+
+* fix: update credentials file path handling ([`ce51684`](https://github.com/en9inerd/tgeraser/commit/ce5168465e07e569ffe3634f43ef568db63b300d))
 
 ## v1.3.0 (2024-06-09)
 
@@ -12,13 +16,11 @@
 
 * refactor: improve readability ([`55e5574`](https://github.com/en9inerd/tgeraser/commit/55e5574aa6cca7516210f87db96a0cf06f48dcd7))
 
-
 ## v1.2.8 (2024-04-26)
 
 ### Fix
 
 * fix: update dependencies ([`f71b6f8`](https://github.com/en9inerd/tgeraser/commit/f71b6f8924018ef8aae8a733eeb680dc33555b2e))
-
 
 ## v1.2.7 (2023-11-20)
 
@@ -26,20 +28,17 @@
 
 * fix: properly formatted output and updated readme file ([`00f1e8c`](https://github.com/en9inerd/tgeraser/commit/00f1e8caa41153ab5741887e61920a0a7e6a9b45))
 
-
 ## v1.2.6 (2023-11-15)
 
 ### Fix
 
 * fix: update readme.md ([`31e65bb`](https://github.com/en9inerd/tgeraser/commit/31e65bbee1a4b07645fbb5f304e2ecb590b9861c))
 
-
 ## v1.2.5 (2023-11-10)
 
 ### Fix
 
 * fix: remove unused code ([`d1aeafe`](https://github.com/en9inerd/tgeraser/commit/d1aeafee79b30c93ddbb5e26edfc002232c8443b))
-
 
 ## v1.2.4 (2023-11-10)
 
@@ -57,13 +56,11 @@
 - update dependencies
 - refactor code in utils.py ([`4778597`](https://github.com/en9inerd/tgeraser/commit/47785971403ec2b816b45b33382509a85b5baa24))
 
-
 ## v1.2.1 (2023-09-26)
 
 ### Fix
 
 * fix: fix some output ([`4b1d1ba`](https://github.com/en9inerd/tgeraser/commit/4b1d1ba90149c96fe0362c79a40c7108f99008a0))
-
 
 ## v1.2.0 (2023-09-26)
 
@@ -81,13 +78,11 @@
 
 feat: add bunch of improvements ([`4ee544d`](https://github.com/en9inerd/tgeraser/commit/4ee544dcbea9f40cb5e0e7fe9fd0b947e0e94b8e))
 
-
 ## v1.1.2 (2023-07-09)
 
 ### Fix
 
 * fix: update dependency versions ([`72ce1b4`](https://github.com/en9inerd/tgeraser/commit/72ce1b4cb11d7a99f7e73fc4439025b78ee5304a))
-
 
 ## v1.1.1 (2021-09-07)
 
@@ -100,7 +95,6 @@ feat: add bunch of improvements ([`4ee544d`](https://github.com/en9inerd/tgerase
 * Merge pull request #6 from en9inerd/features
 
 fix `wipe everything` option ([`1720508`](https://github.com/en9inerd/tgeraser/commit/1720508c4034a60c685e2ed124a3e99e1f7dbce8))
-
 
 ## v1.1.0 (2021-09-04)
 
@@ -118,13 +112,11 @@ fix `wipe everything` option ([`1720508`](https://github.com/en9inerd/tgeraser/c
 
 Add &#39;wipe-everything&#39; option ([`eb6d887`](https://github.com/en9inerd/tgeraser/commit/eb6d8874a4e42157406dcee6ed25071e116bc704))
 
-
 ## v1.0.1 (2021-07-17)
 
 ### Fix
 
 * fix(functionality): need to clear entities list every scheduled iteration ([`ec4df5d`](https://github.com/en9inerd/tgeraser/commit/ec4df5d1fe230e951ffdd729172a4ada723d94e0))
-
 
 ## v1.0.0 (2021-07-17)
 
@@ -133,7 +125,6 @@ Add &#39;wipe-everything&#39; option ([`eb6d887`](https://github.com/en9inerd/tg
 * feat(package): update version
 
 BREAKING CHANGE: improved scheduling feature ([`99b0418`](https://github.com/en9inerd/tgeraser/commit/99b04185f6edb3bd7216acf57a470cfe9044f55f))
-
 
 ## v0.3.7 (2021-07-16)
 

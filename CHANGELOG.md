@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## v1.3.2 (2024-10-06)
+
+### Fix
+
+* fix: delete all messages from conversation with user ([`c95f7ed`](https://github.com/en9inerd/tgeraser/commit/c95f7eddae742dcd94a4d33a12dee8190193bbe3))
+
+### Unknown
+
+* Merge pull request #15 from en9inerd/issue-14
+
+issue-14: delete all messages from conversation with user ([`fb2f871`](https://github.com/en9inerd/tgeraser/commit/fb2f87149f842517c2d29050615f80d0b349933b))
+
 ## v1.3.1 (2024-07-31)
 
 ### Fix

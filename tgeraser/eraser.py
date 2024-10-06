@@ -124,6 +124,18 @@ class Eraser(TelegramClient):  # type: ignore
             )
 
         for entity in self.__entities:
+            if isinstance(entity, User):
+                print_header(
+                    f"Deleting messages from conversation with user {get_display_name(entity)}..."
+                )
+
+                await self.delete_dialog(entity.id, revoke=True)
+
+                print(
+                    f"\nDeleted all messages from conversation with user {get_display_name(entity)}.\n"
+                )
+                continue
+
             display_name = get_display_name(entity)
             print_header(f"Getting messages from '{display_name}'...")
             messages_to_delete = [

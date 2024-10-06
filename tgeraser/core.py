@@ -52,8 +52,11 @@ async def main() -> None:
     """
     Entry function
     """
-    loop = asyncio.get_running_loop()
-    loop.add_signal_handler(signal.SIGINT, signal_handler)
+    try:
+        loop = asyncio.get_running_loop()
+        loop.add_signal_handler(signal.SIGINT, signal_handler)
+    except NotImplementedError:
+        pass
 
     arguments = docopt(__doc__, version=VERSION)
     limit = cast_to_int(arguments["--limit"], "limit") if arguments["--limit"] else None

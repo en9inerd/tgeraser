@@ -39,7 +39,7 @@ from .exceptions import TgEraserException
 from .utils import cast_to_int, get_credentials, parse_time_period
 
 
-def signal_handler():
+def signal_handler(sig=signal.SIGINT, frame=None):
     """
     Signal handler
     """
@@ -52,11 +52,11 @@ async def main() -> None:
     """
     Entry function
     """
-    try:
+    if os.name == "posix":
         loop = asyncio.get_running_loop()
         loop.add_signal_handler(signal.SIGINT, signal_handler)
-    except NotImplementedError:
-        pass
+    else:
+        signal.signal(signal.SIGINT, signal_handler)
 
     arguments = docopt(__doc__, version=VERSION)
     limit = cast_to_int(arguments["--limit"], "limit") if arguments["--limit"] else None

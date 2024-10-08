@@ -1,8 +1,26 @@
 # CHANGELOG
 
+
+## v1.3.3 (2024-10-08)
+
+### Fixes
+
+* fix: update signal handler function to handle different operating systems ([`d79bef4`](https://github.com/en9inerd/tgeraser/commit/d79bef443320f6c065e7a48c59b658566090398f))
+
+### Unknown
+
+* Merge pull request #16 from hdoublearp/master
+
+fix: fix bug in signal handler on Windows ([`446e627`](https://github.com/en9inerd/tgeraser/commit/446e627b781b1eede3b960342eeb68f451befbc8))
+
+* Fix bug in signal handler on Windows
+
+Windows doesn't support signals in Python. Rather than check for the OS version using the platform library, simply graceful proceed if an exception is raised here. ([`d0263ea`](https://github.com/en9inerd/tgeraser/commit/d0263eab8ce68faf5f467b9f945dbb515766af16))
+
+
 ## v1.3.2 (2024-10-06)
 
-### Fix
+### Fixes
 
 * fix: delete all messages from conversation with user ([`c95f7ed`](https://github.com/en9inerd/tgeraser/commit/c95f7eddae742dcd94a4d33a12dee8190193bbe3))
 
@@ -12,49 +30,56 @@
 
 issue-14: delete all messages from conversation with user ([`fb2f871`](https://github.com/en9inerd/tgeraser/commit/fb2f87149f842517c2d29050615f80d0b349933b))
 
+
 ## v1.3.1 (2024-07-31)
 
-### Fix
+### Fixes
 
 * fix: update credentials file path handling ([`ce51684`](https://github.com/en9inerd/tgeraser/commit/ce5168465e07e569ffe3634f43ef568db63b300d))
 
+
 ## v1.3.0 (2024-06-09)
 
-### Feature
+### Features
 
 * feat: add `--older-than` option ([`4bc6a63`](https://github.com/en9inerd/tgeraser/commit/4bc6a63049b5f52e9b8f595322bed661f8b8d033))
 
-### Refactor
+### Refactoring
 
 * refactor: improve readability ([`55e5574`](https://github.com/en9inerd/tgeraser/commit/55e5574aa6cca7516210f87db96a0cf06f48dcd7))
 
+
 ## v1.2.8 (2024-04-26)
 
-### Fix
+### Fixes
 
 * fix: update dependencies ([`f71b6f8`](https://github.com/en9inerd/tgeraser/commit/f71b6f8924018ef8aae8a733eeb680dc33555b2e))
 
+
 ## v1.2.7 (2023-11-20)
 
-### Fix
+### Fixes
 
 * fix: properly formatted output and updated readme file ([`00f1e8c`](https://github.com/en9inerd/tgeraser/commit/00f1e8caa41153ab5741887e61920a0a7e6a9b45))
 
+
 ## v1.2.6 (2023-11-15)
 
-### Fix
+### Fixes
 
 * fix: update readme.md ([`31e65bb`](https://github.com/en9inerd/tgeraser/commit/31e65bbee1a4b07645fbb5f304e2ecb590b9861c))
 
+
 ## v1.2.5 (2023-11-10)
 
-### Fix
+### Fixes
 
 * fix: remove unused code ([`d1aeafe`](https://github.com/en9inerd/tgeraser/commit/d1aeafee79b30c93ddbb5e26edfc002232c8443b))
 
+
 ## v1.2.4 (2023-11-10)
 
-### Fix
+### Fixes
 
 * fix: fix a bug ([`ccebe39`](https://github.com/en9inerd/tgeraser/commit/ccebe391b5d2baebbb8642c2d133b47e4416b24f))
 
@@ -68,19 +93,21 @@ issue-14: delete all messages from conversation with user ([`fb2f871`](https://g
 - update dependencies
 - refactor code in utils.py ([`4778597`](https://github.com/en9inerd/tgeraser/commit/47785971403ec2b816b45b33382509a85b5baa24))
 
+
 ## v1.2.1 (2023-09-26)
 
-### Fix
+### Fixes
 
 * fix: fix some output ([`4b1d1ba`](https://github.com/en9inerd/tgeraser/commit/4b1d1ba90149c96fe0362c79a40c7108f99008a0))
 
+
 ## v1.2.0 (2023-09-26)
 
-### Feature
+### Features
 
 * feat: add bunch of improvements ([`d33d81b`](https://github.com/en9inerd/tgeraser/commit/d33d81bc224aa63bb0f3b8840455407ef4164415))
 
-### Fix
+### Fixes
 
 * fix: fix ga workflow ([`6846456`](https://github.com/en9inerd/tgeraser/commit/684645683ccd9dd68d1c7c789cd3914a725c0640))
 
@@ -90,15 +117,17 @@ issue-14: delete all messages from conversation with user ([`fb2f871`](https://g
 
 feat: add bunch of improvements ([`4ee544d`](https://github.com/en9inerd/tgeraser/commit/4ee544dcbea9f40cb5e0e7fe9fd0b947e0e94b8e))
 
+
 ## v1.1.2 (2023-07-09)
 
-### Fix
+### Fixes
 
 * fix: update dependency versions ([`72ce1b4`](https://github.com/en9inerd/tgeraser/commit/72ce1b4cb11d7a99f7e73fc4439025b78ee5304a))
 
+
 ## v1.1.1 (2021-09-07)
 
-### Fix
+### Fixes
 
 * fix: fix `wipe everything` option ([`71678c3`](https://github.com/en9inerd/tgeraser/commit/71678c3d5652e4eca69a75e1d66cc9065205a9bc))
 
@@ -108,13 +137,14 @@ feat: add bunch of improvements ([`4ee544d`](https://github.com/en9inerd/tgerase
 
 fix `wipe everything` option ([`1720508`](https://github.com/en9inerd/tgeraser/commit/1720508c4034a60c685e2ed124a3e99e1f7dbce8))
 
+
 ## v1.1.0 (2021-09-04)
 
-### Feature
+### Features
 
-* feat: add &#39;wipe-everything&#39; option ([`b4384d7`](https://github.com/en9inerd/tgeraser/commit/b4384d71f88be60799fbffb94ed7047ae8030104))
+* feat: add 'wipe-everything' option ([`b4384d7`](https://github.com/en9inerd/tgeraser/commit/b4384d71f88be60799fbffb94ed7047ae8030104))
 
-### Fix
+### Fixes
 
 * fix: fix entity filtering ([`88985c7`](https://github.com/en9inerd/tgeraser/commit/88985c71b583d77ffeece80842e43b2cf0838ff6))
 
@@ -122,13 +152,15 @@ fix `wipe everything` option ([`1720508`](https://github.com/en9inerd/tgeraser/c
 
 * Merge pull request #5 from en9inerd/features
 
-Add &#39;wipe-everything&#39; option ([`eb6d887`](https://github.com/en9inerd/tgeraser/commit/eb6d8874a4e42157406dcee6ed25071e116bc704))
+Add 'wipe-everything' option ([`eb6d887`](https://github.com/en9inerd/tgeraser/commit/eb6d8874a4e42157406dcee6ed25071e116bc704))
+
 
 ## v1.0.1 (2021-07-17)
 
-### Fix
+### Fixes
 
 * fix(functionality): need to clear entities list every scheduled iteration ([`ec4df5d`](https://github.com/en9inerd/tgeraser/commit/ec4df5d1fe230e951ffdd729172a4ada723d94e0))
+
 
 ## v1.0.0 (2021-07-17)
 
@@ -138,9 +170,10 @@ Add &#39;wipe-everything&#39; option ([`eb6d887`](https://github.com/en9inerd/tg
 
 BREAKING CHANGE: improved scheduling feature ([`99b0418`](https://github.com/en9inerd/tgeraser/commit/99b04185f6edb3bd7216acf57a470cfe9044f55f))
 
+
 ## v0.3.7 (2021-07-16)
 
-### Fix
+### Fixes
 
 * fix: use setup.cfg instead of setup.py ([`42fc025`](https://github.com/en9inerd/tgeraser/commit/42fc02516360d325d01ec6aef556f1ed4562eff7))
 
@@ -150,9 +183,9 @@ BREAKING CHANGE: improved scheduling feature ([`99b0418`](https://github.com/en9
 
 * bunch of fixes ([`cf797f1`](https://github.com/en9inerd/tgeraser/commit/cf797f1d281a859141af9f190553eeda6c89247a))
 
-* fix readme file &amp; bump version ([`ed03f41`](https://github.com/en9inerd/tgeraser/commit/ed03f41652d002cd9dbaefa7bfaf070d064e1820))
+* fix readme file & bump version ([`ed03f41`](https://github.com/en9inerd/tgeraser/commit/ed03f41652d002cd9dbaefa7bfaf070d064e1820))
 
-* fix bugs &amp; bump version ([`edbd8f0`](https://github.com/en9inerd/tgeraser/commit/edbd8f0ba79f5a7d5483f6bc1cae29ee065374c2))
+* fix bugs & bump version ([`edbd8f0`](https://github.com/en9inerd/tgeraser/commit/edbd8f0ba79f5a7d5483f6bc1cae29ee065374c2))
 
 * oops ([`e096261`](https://github.com/en9inerd/tgeraser/commit/e0962618d89c3b91cdbc21d82052145301dc9410))
 
@@ -162,7 +195,7 @@ BREAKING CHANGE: improved scheduling feature ([`99b0418`](https://github.com/en9
 
 * some fixes for Travis passing ([`de3852a`](https://github.com/en9inerd/tgeraser/commit/de3852ae0c0145de38608376eaa073c7d552cc2d))
 
-* fix bugs &amp; clean up code ([`1fc76ae`](https://github.com/en9inerd/tgeraser/commit/1fc76ae83bf9ac36383c9caa0ecf9088541fd2a8))
+* fix bugs & clean up code ([`1fc76ae`](https://github.com/en9inerd/tgeraser/commit/1fc76ae83bf9ac36383c9caa0ecf9088541fd2a8))
 
 * some fixes ([`92ba9d2`](https://github.com/en9inerd/tgeraser/commit/92ba9d2bd9b1e56506dfd2bc7537e921f7bb3366))
 

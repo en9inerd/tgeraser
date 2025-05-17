@@ -2,8 +2,8 @@
 Eraser class
 """
 
-import datetime
 import platform
+from datetime import datetime, timedelta, timezone
 from getpass import getpass
 from typing import Any, List
 
@@ -119,7 +119,7 @@ class Eraser(TelegramClient):  # type: ignore
         """
         offset_date = None
         if self.__older_than is not None:
-            offset_date = datetime.datetime.now() - datetime.timedelta(
+            offset_date = datetime.now(timezone.utc) - timedelta(
                 seconds=self.__older_than
             )
 

@@ -1,5 +1,5 @@
 """
-Tool deletes all your messages from chat/channel/conversation on Telegram.
+TgEraser deletes all your messages from a chat/channel/conversation on Telegram without requiring admin privileges.
 
 Usage:
     tgeraser [(session <session_name>) --entity-type TYPE -l NUM -d PATH -p PEER_ID -o STRING]

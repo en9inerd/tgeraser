@@ -178,7 +178,7 @@ class Eraser(TelegramClient):  # type: ignore
                 f"Remaining {len(messages_to_delete) - number_of_deleted_msgs} messages can't be deleted without admin rights because they are service messages."
             )
 
-        print("\n")
+        print()
 
     async def _filter_entities(self) -> List[hints.EntityLike]:
         """

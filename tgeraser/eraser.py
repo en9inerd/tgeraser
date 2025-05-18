@@ -2,8 +2,8 @@
 Eraser class
 """
 
-import datetime
 import platform
+from datetime import datetime, timedelta, timezone
 from getpass import getpass
 from typing import Any, List
 
@@ -85,7 +85,16 @@ class Eraser(TelegramClient):  # type: ignore
         Runs deletion of messages from peer
         """
         await self._determine_entities()
+
+        start_time = datetime.now()
+        print(f"\nDeletion started at: {start_time.isoformat()} (local)")
+
         await self._delete_messages_from_entities()
+
+        finish_time = datetime.now()
+        print(f"Deletion finished at: {finish_time.isoformat()} (local)")
+        print(f"Duration: {str(finish_time - start_time)}\n")
+
         self.__entities.clear()
 
     async def _determine_entities(self) -> None:
@@ -119,7 +128,7 @@ class Eraser(TelegramClient):  # type: ignore
         """
         offset_date = None
         if self.__older_than is not None:
-            offset_date = datetime.datetime.now() - datetime.timedelta(
+            offset_date = datetime.now(timezone.utc) - timedelta(
                 seconds=self.__older_than
             )
 

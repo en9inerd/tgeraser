@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v1.4.1 (2025-05-18)
+
+### Bug Fixes
+
+- Remove `\n`
+  ([`af2b238`](https://github.com/en9inerd/tgeraser/commit/af2b2387e93036fbe7661b68eec3a98476d9e52a))
+
+
 ## v1.4.0 (2025-05-18)
 
 ### Bug Fixes

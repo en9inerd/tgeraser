@@ -85,7 +85,16 @@ class Eraser(TelegramClient):  # type: ignore
         Runs deletion of messages from peer
         """
         await self._determine_entities()
+
+        start_time = datetime.now()
+        print(f"\nDeletion started at: {start_time.isoformat()} (local)")
+
         await self._delete_messages_from_entities()
+
+        finish_time = datetime.now()
+        print(f"Deletion finished at: {finish_time.isoformat()} (local)")
+        print(f"Duration: {str(finish_time - start_time)}\n")
+
         self.__entities.clear()
 
     async def _determine_entities(self) -> None:

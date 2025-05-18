@@ -24,7 +24,6 @@ import asyncio
 import os
 import signal
 import sys
-import time
 
 from docopt import docopt
 

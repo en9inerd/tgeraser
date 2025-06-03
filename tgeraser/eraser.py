@@ -36,6 +36,7 @@ class Eraser(TelegramClient):  # type: ignore
         self.__limit = kwargs["limit"]
         self.__peers = kwargs["peers"].split(",") if kwargs["peers"] else []
         self.__wipe_everything = kwargs["wipe_everything"]
+        self.__delete_conversation = kwargs.get("delete_conversation", False)
         self.__entity_type = kwargs["entity_type"]
         self.__older_than = kwargs["older_than"]
         self.__entities: List[hints.Entity] = []
@@ -133,19 +134,16 @@ class Eraser(TelegramClient):  # type: ignore
             )
 
         for entity in self.__entities:
-            if isinstance(entity, User):
+            display_name = get_display_name(entity)
+
+            if isinstance(entity, User) and self.__delete_conversation:
                 print_header(
-                    f"Deleting messages from conversation with user {get_display_name(entity)}..."
+                    f"Deleting entire conversation with user '{display_name}'..."
                 )
-
                 await self.delete_dialog(entity.id, revoke=True)
-
-                print(
-                    f"\nDeleted all messages from conversation with user {get_display_name(entity)}.\n"
-                )
+                print(f"\nDeleted entire conversation with user '{display_name}'.\n")
                 continue
 
-            display_name = get_display_name(entity)
             print_header(f"Getting messages from '{display_name}'...")
             messages_to_delete = [
                 msg.id

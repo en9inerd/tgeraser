@@ -30,14 +30,15 @@ Credentials file can be created/edited manually in the following format:
 TgEraser deletes all your messages from a chat, channel, or conversation on Telegram without requiring admin privileges.
 
 Usage:
-    tgeraser [(session <session_name>) --entity-type TYPE -l NUM -d PATH -p PEER_ID -o STRING]
-    tgeraser session <session_name> -w [--entity-type TYPE -o STRING]
+    tgeraser [(session <session_name>) --entity-type TYPE -l NUM -d PATH -p PEER_ID -o STRING --delete-conversation]
+    tgeraser session <session_name> -w [--entity-type TYPE -o STRING --delete-conversation]
     tgeraser -h | --help
     tgeraser --version
 
 Options:
     -d --directory PATH         Specify a directory where your sessions are stored. [default: ~/.tgeraser/]
     -w --wipe-everything        Delete all messages from all entities of a certain type that you have in your dialog list.
+    --delete-conversation       If set, delete the whole conversation (only valid for user-type peers).
     --entity-type TYPE          Available types: any, chat, channel, user. [default: chat]
     -p --peers PEER_ID          Specify certain peers by comma (chat/channel/user).
     -l --limit NUM              Show a specified number of recent chats.

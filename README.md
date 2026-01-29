@@ -30,8 +30,8 @@ Credentials file can be created/edited manually in the following format:
 TgEraser deletes all your messages from a chat, channel, or conversation on Telegram without requiring admin privileges.
 
 Usage:
-    tgeraser [(session <session_name>) --entity-type TYPE -l NUM -d PATH -p PEER_ID -o STRING --delete-conversation]
-    tgeraser session <session_name> -w [--entity-type TYPE -o STRING --delete-conversation]
+    tgeraser [(session <session_name>) --entity-type TYPE -l NUM -d PATH -p PEER_ID -o STRING -m TYPES --delete-conversation]
+    tgeraser session <session_name> -w [--entity-type TYPE -o STRING -m TYPES --delete-conversation]
     tgeraser -h | --help
     tgeraser --version
 
@@ -44,6 +44,10 @@ Options:
     -l --limit NUM              Show a specified number of recent chats.
     -o --older-than STRING      Delete messages older than X seconds/minutes/hours/days/weeks.
                                 Example: --older-than "3*days" OR --older-than "5*seconds"
+    -m --media-type TYPES       Delete only specific media types (server-side filtering).
+                                Comma-separated list of: photo, video, audio, voice, video_note, gif, document.
+                                Use "media" to delete all media types. If not specified, deletes all messages.
+                                Example: --media-type "photo,video" OR --media-type media
     -h --help                   Show this screen.
     --version                   Show version.
 ```

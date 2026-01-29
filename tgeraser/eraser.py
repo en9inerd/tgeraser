@@ -10,7 +10,20 @@ from typing import Any, List
 from telethon import TelegramClient, hints
 from telethon.errors import SessionPasswordNeededError
 from telethon.network import ConnectionTcpAbridged
-from telethon.tl.types import Channel, Chat, InputUserSelf, User
+from telethon.tl.types import (
+    Channel,
+    Chat,
+    InputMessagesFilterDocument,
+    InputMessagesFilterGif,
+    InputMessagesFilterMusic,
+    InputMessagesFilterPhotos,
+    InputMessagesFilterRoundVideo,
+    InputMessagesFilterVideo,
+    InputMessagesFilterVoice,
+    InputUserSelf,
+    TypeMessagesFilter,
+    User,
+)
 from telethon.utils import get_display_name
 
 from .__version__ import VERSION
@@ -39,7 +52,46 @@ class Eraser(TelegramClient):  # type: ignore
         self.__delete_conversation = kwargs.get("delete_conversation", False)
         self.__entity_type = kwargs["entity_type"]
         self.__older_than = kwargs["older_than"]
+        self.__media_filters: dict[str, TypeMessagesFilter] | None = self._parse_media_types(
+            kwargs.get("media_types")
+        )
         self.__entities: List[hints.Entity] = []
+
+    MEDIA_TYPE_FILTERS: dict[str, type[TypeMessagesFilter]] = {
+        "photo": InputMessagesFilterPhotos,
+        "video": InputMessagesFilterVideo,
+        "audio": InputMessagesFilterMusic,
+        "voice": InputMessagesFilterVoice,
+        "video_note": InputMessagesFilterRoundVideo,
+        "gif": InputMessagesFilterGif,
+        "document": InputMessagesFilterDocument,
+    }
+
+    def _parse_media_types(
+        self, media_types_str: str | None
+    ) -> dict[str, TypeMessagesFilter] | None:
+        """
+        Parses the media types string into a dict of {name: filter_instance}.
+        Returns None if no filter specified (delete all messages).
+        """
+        if not media_types_str:
+            return None
+
+        types = [t.strip().lower() for t in media_types_str.split(",")]
+        if "media" in types:
+            types = list(self.MEDIA_TYPE_FILTERS.keys())
+
+        filters: dict[str, TypeMessagesFilter] = {}
+        for media_type in types:
+            if media_type not in self.MEDIA_TYPE_FILTERS:
+                raise TgEraserException(
+                    f"Invalid media type: '{media_type}'. "
+                    f"Valid types are: {', '.join(sorted(self.MEDIA_TYPE_FILTERS.keys()))}, media"
+                )
+            if media_type not in filters:
+                filters[media_type] = self.MEDIA_TYPE_FILTERS[media_type]()
+
+        return filters if filters else None
 
     async def init(self) -> None:
         """
@@ -145,7 +197,21 @@ class Eraser(TelegramClient):  # type: ignore
                 continue
 
             print_header(f"Getting messages from '{display_name}'...")
-            messages_to_delete = [
+            messages_to_delete = await self._get_messages_to_delete(
+                entity, offset_date
+            )
+            print(f"\nFound {len(messages_to_delete)} messages to delete.")
+            if messages_to_delete:
+                await self._delete_messages(entity, messages_to_delete, display_name)
+
+    async def _get_messages_to_delete(
+        self, entity: hints.Entity, offset_date: datetime | None
+    ) -> List[int]:
+        """
+        Gets message IDs to delete, using server-side filtering if media types specified.
+        """
+        if self.__media_filters is None:
+            return [
                 msg.id
                 for msg in await self.get_messages(
                     entity,
@@ -155,8 +221,21 @@ class Eraser(TelegramClient):  # type: ignore
                     offset_date=offset_date,
                 )
             ]
-            print(f"\nFound {len(messages_to_delete)} messages to delete.")
-            await self._delete_messages(entity, messages_to_delete, display_name)
+
+        message_ids: set[int] = set()
+        for name, media_filter in self.__media_filters.items():
+            print(f"  Fetching {name}...")
+            messages = await self.get_messages(
+                entity,
+                from_user=InputUserSelf(),
+                limit=None,
+                wait_time=None,
+                offset_date=offset_date,
+                filter=media_filter,
+            )
+            message_ids.update(msg.id for msg in messages)
+
+        return list(message_ids)
 
     async def _delete_messages(
         self, entity: hints.Entity, messages_to_delete: List[int], display_name: str

@@ -1,6 +1,6 @@
 -i https://pypi.org/simple
 docopt==0.6.2
 pyaes==1.6.1
-pyasn1==0.6.1; python_version >= '3.8'
-rsa==4.9; python_version >= '3.6' and python_version < '4'
-telethon==1.37.0; python_version >= '3.5'
+pyasn1==0.6.2; python_version >= '3.8'
+rsa==4.9.1; python_version >= '3.6' and python_version < '4'
+telethon==1.42.0; python_version >= '3.5'

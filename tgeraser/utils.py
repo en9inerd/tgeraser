@@ -58,12 +58,12 @@ async def get_credentials(args: Dict[str, Any]) -> Dict[str, Union[str, int]]:
     creds = {}
 
     try:
-        if os.path.exists(path_to_creds_file):
-            with open(path_to_creds_file, "r") as file:
-                creds = json.load(file)
-        elif TG_API_ID and TG_API_HASH:
+        if TG_API_ID and TG_API_HASH:
             creds["api_id"] = cast_to_int(TG_API_ID, "api_id")
             creds["api_hash"] = TG_API_HASH
+        elif os.path.exists(path_to_creds_file):
+            with open(path_to_creds_file, "r") as file:
+                creds = json.load(file)
         else:
             creds["api_id"] = cast_to_int(
                 await async_input("Enter your API ID: "), "api_id"

@@ -256,10 +256,6 @@ class Eraser(TelegramClient):  # type: ignore
     ) -> None:
         """
         Deletes messages.
-
-        pts_count in the response is a Pts update-event count, not a deleted
-        count, and Telegram silently skips IDs it cannot delete with no
-        per-ID status, so we report the requested count.
         """
         print_header(f"Deleting messages from '{display_name}'...")
         await self.delete_messages(entity, messages_to_delete, revoke=True)

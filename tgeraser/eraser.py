@@ -200,7 +200,6 @@ class Eraser(TelegramClient):  # type: ignore
             messages_to_delete = await self._get_messages_to_delete(
                 entity, offset_date
             )
-            print(f"\nFound {len(messages_to_delete)} messages to delete.")
             if messages_to_delete:
                 await self._delete_messages(entity, messages_to_delete, display_name)
 
@@ -210,52 +209,64 @@ class Eraser(TelegramClient):  # type: ignore
         """
         Gets message IDs to delete, using server-side filtering if media types specified.
         """
-        if self.__media_filters is None:
-            return [
-                msg.id
-                for msg in await self.get_messages(
-                    entity,
-                    from_user=InputUserSelf(),
-                    limit=None,
-                    wait_time=None,
-                    offset_date=offset_date,
-                )
-            ]
+        seen: dict[int, bool] = {}
 
-        message_ids: set[int] = set()
-        for name, media_filter in self.__media_filters.items():
-            print(f"  Fetching {name}...")
+        if self.__media_filters is None:
             messages = await self.get_messages(
                 entity,
                 from_user=InputUserSelf(),
                 limit=None,
                 wait_time=None,
                 offset_date=offset_date,
-                filter=media_filter,
             )
-            message_ids.update(msg.id for msg in messages)
+            for msg in messages:
+                seen[msg.id] = msg.action is not None
+        else:
+            for name, media_filter in self.__media_filters.items():
+                print(f"  Fetching {name}...")
+                messages = await self.get_messages(
+                    entity,
+                    from_user=InputUserSelf(),
+                    limit=None,
+                    wait_time=None,
+                    offset_date=offset_date,
+                    filter=media_filter,
+                )
+                for msg in messages:
+                    seen[msg.id] = msg.action is not None
 
-        return list(message_ids)
+        if not seen:
+            print("\nNothing to delete.")
+            return []
+
+        service = sum(seen.values())
+        print(
+            f"\nFound {len(seen)} messages "
+            f"({len(seen) - service} regular, {service} service)."
+        )
+        if service > 0 and not isinstance(entity, User):
+            print(
+                "Note: service messages may not delete without admin rights; "
+                "Telegram silently skips unauthorized deletions."
+            )
+        return list(seen)
 
     async def _delete_messages(
         self, entity: hints.Entity, messages_to_delete: List[int], display_name: str
     ) -> None:
         """
-        Deletes messages
+        Deletes messages.
+
+        pts_count in the response is a Pts update-event count, not a deleted
+        count, and Telegram silently skips IDs it cannot delete with no
+        per-ID status, so we report the requested count.
         """
         print_header(f"Deleting messages from '{display_name}'...")
-        result = await self.delete_messages(entity, messages_to_delete, revoke=True)
-        number_of_deleted_msgs = sum([result[i].pts_count for i in range(len(result))])
+        await self.delete_messages(entity, messages_to_delete, revoke=True)
         print(
-            f"\nDeleted {number_of_deleted_msgs} messages of {len(messages_to_delete)} in '{display_name}' entity."
+            f"\nRequested deletion of {len(messages_to_delete)} messages "
+            f"in '{display_name}' entity.\n"
         )
-
-        if number_of_deleted_msgs < len(messages_to_delete):
-            print(
-                f"Remaining {len(messages_to_delete) - number_of_deleted_msgs} messages can't be deleted without admin rights because they are service messages."
-            )
-
-        print()
 
     async def _filter_entities(self) -> List[hints.EntityLike]:
         """

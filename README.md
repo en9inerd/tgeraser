@@ -55,16 +55,6 @@ Options:
     --version                   Show version.
 ```
 
-### MTProto proxy
-
-Connect via an MTProto proxy (useful in regions where Telegram is blocked):
-
-```
-tgeraser --proxy 1.2.3.4:443:ee367f1d2b4c7e9a0f5d8b3c6a2e1f4d
-```
-
-The secret is the hex string provided by your MTProto proxy server.
-
 Executing the tool without options will guide you through the creation of your first user session. After that you can create sessions for multiple users using the `tgeraser session <new_session_name>` command.
 
 ## Contributing

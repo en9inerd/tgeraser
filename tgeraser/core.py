@@ -20,6 +20,7 @@ Options:
                                 Comma-separated list of: photo, video, audio, voice, video_note, gif, document.
                                 Use "media" to delete all media types. If not specified, deletes all messages.
                                 Example: --media-type "photo,video" OR --media-type media
+    --proxy HOST:PORT:SECRET    MTProto proxy (e.g. 1.2.3.4:443:deadbeef).
     -h --help                   Show this screen.
     --version                   Show version.
 
@@ -36,6 +37,22 @@ from .__version__ import VERSION
 from .eraser import Eraser
 from .exceptions import TgEraserException
 from .utils import cast_to_int, get_credentials, parse_time_period
+
+
+def _parse_proxy(proxy_str: str | None):
+    if not proxy_str:
+        return None
+    parts = proxy_str.split(":", 2)
+    if len(parts) != 3:
+        raise ValueError("--proxy must be HOST:PORT:SECRET")
+    host, port_str, secret = parts
+    try:
+        port = int(port_str)
+    except ValueError:
+        raise ValueError(f"--proxy port must be an integer, got {port_str!r}")
+    if not (1 <= port <= 65535):
+        raise ValueError(f"--proxy port must be 1-65535, got {port}")
+    return (host, port, secret)
 
 
 def signal_handler(sig=signal.SIGINT, frame=None):
@@ -76,6 +93,7 @@ async def main() -> None:
             "older_than": older_than,
             "delete_conversation": arguments["--delete-conversation"],
             "media_types": arguments["--media-type"],
+            "proxy": _parse_proxy(arguments["--proxy"]),
         }
         await run_eraser(kwargs)
     except ValueError as err:

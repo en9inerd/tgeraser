@@ -9,7 +9,7 @@ from typing import Any, List
 
 from telethon import TelegramClient, hints
 from telethon.errors import SessionPasswordNeededError
-from telethon.network import ConnectionTcpAbridged
+from telethon.network import ConnectionTcpAbridged, ConnectionTcpMTProxyRandomizedIntermediate
 from telethon.tl.types import (
     Channel,
     Chat,
@@ -37,11 +37,13 @@ class Eraser(TelegramClient):  # type: ignore
     """
 
     def __init__(self: TelegramClient, **kwargs: Any) -> None:
+        proxy = kwargs.get("proxy")
         super().__init__(
             session=kwargs["session_name"],
             api_id=kwargs["api_id"],
             api_hash=kwargs["api_hash"],
-            connection=ConnectionTcpAbridged,
+            connection=ConnectionTcpMTProxyRandomizedIntermediate if proxy else ConnectionTcpAbridged,
+            proxy=proxy,
             device_model=platform.uname().system,
             system_version=platform.uname().release,
             app_version=VERSION,

@@ -93,7 +93,7 @@ async def main() -> None:
             "older_than": older_than,
             "delete_conversation": arguments["--delete-conversation"],
             "media_types": arguments["--media-type"],
-            "proxy": _parse_proxy(arguments["--proxy"]),
+            "proxy": _parse_proxy(arguments.get("--proxy")),
         }
         await run_eraser(kwargs)
     except ValueError as err:
